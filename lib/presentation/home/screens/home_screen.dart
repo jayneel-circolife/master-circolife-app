@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:master_circolife_app/presentation/home/screens/devices_screen.dart';
+import 'package:master_circolife_app/presentation/home/screens/pricing_screen.dart';
 import 'package:master_circolife_app/utils/secrets.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -65,10 +66,10 @@ class _HomeScreenState extends State<HomeScreen> {
               FutureBuilder(
                   future: http.get(Uri.http(AppSecrets.baseUrl,'/api/user/${phoneController.text}')),
                   builder: (context, snapshot) {
-                    log(snapshot.data!.statusCode.toString(), name: "STATUS CODE");
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const CircularProgressIndicator();
                     }
+                    // log(snapshot.data!.statusCode.toString(), name: "STATUS CODE");
                     if (snapshot.data?.statusCode == 201) {
                       Map<String, dynamic> data = jsonDecode(snapshot.data!.body);
                       return Column(
@@ -113,6 +114,14 @@ class _HomeScreenState extends State<HomeScreen> {
                             onTap: () {
                               Navigator.push(
                                   context, MaterialPageRoute(builder: (context) => DevicesScreen(userId: data['userid'], fullName: data['Fullname'])));
+                            },
+                          ),
+                          ListTile(
+                            title: const Text("Custom Pricing"),
+                            trailing: const Icon(Icons.arrow_forward_rounded),
+                            onTap: () {
+                              Navigator.push(
+                                  context, MaterialPageRoute(builder: (context) => PricingScreen(userId: data['userid'],)));
                             },
                           )
                         ],

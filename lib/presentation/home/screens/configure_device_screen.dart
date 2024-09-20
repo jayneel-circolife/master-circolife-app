@@ -24,23 +24,29 @@ class ConfigureDeviceScreen extends StatelessWidget {
                     builder: (context) {
                       return Container(
                         width: double.maxFinite,
-                        height: 200,
-                        padding: const EdgeInsets.fromLTRB(16, 10, 16, 5),
+                        padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
                         decoration: const BoxDecoration(
                             color: Colors.white, borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10))),
                         child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             SlideAction(
                               onSubmit: () {
-
+                                AlertDialog(
+                                  title: const Text("Are you sure you want to cut the subscription?"),
+                                  actions: [
+                                    TextButton(onPressed: (){}, child: const Text("OK"))
+                                  ],
+                                );
+                                return null;
                               },
                               borderRadius: 12,
                               elevation: 0,
                               innerColor: Colors.white,
                               outerColor:  const Color(0xFF039855) ,
-                              sliderButtonIcon: Icon(
+                              sliderButtonIcon: const Icon(
                                 Icons.electric_bolt,
-                                color:  const Color(0xFF039855),
+                                color:  Color(0xFF039855),
                               ),
                               text: "Subscription OFF >>>",
                               textStyle: const TextStyle(fontSize: 16, color: Color(0xFFFFFFFF)),

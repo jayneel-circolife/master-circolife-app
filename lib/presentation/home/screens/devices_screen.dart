@@ -33,7 +33,6 @@ class DevicesScreen extends StatelessWidget {
                       return const Center(child: CircularProgressIndicator());
                     }
                     if (snapshot.data?.statusCode == 200) {
-                      log(snapshot.data!.body.toString(), name: "Response >");
                       List<dynamic> data = jsonDecode(snapshot.data!.body);
                       return ListView.builder(
                         physics: const NeverScrollableScrollPhysics(),
