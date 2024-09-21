@@ -22,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text("Master Circolife App"),
         centerTitle: true,
@@ -34,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 Expanded(
                     child: TextField(
+                  keyboardType: TextInputType.number,
                   controller: phoneController,
                   decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -64,70 +66,84 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             if (validNumber)
               FutureBuilder(
-                  future: http.get(Uri.http(AppSecrets.baseUrl,'/api/user/${phoneController.text}')),
+                  future: http.get(
+                      Uri.http(
+                        AppSecrets.baseUrl,
+                        '/api/user/${phoneController.text}',
+                      ),
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                      }),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const CircularProgressIndicator();
-                    }
-                    // log(snapshot.data!.statusCode.toString(), name: "STATUS CODE");
-                    if (snapshot.data?.statusCode == 201) {
-                      Map<String, dynamic> data = jsonDecode(snapshot.data!.body);
-                      return Column(
-                        children: [
-                          ListTile(
-                            title: const Text("User Id"),
-                            subtitle: Text(data['userid']),
-                          ),
-                          ListTile(
-                            title: const Text("Full Name"),
-                            subtitle: Text(data['Fullname']),
-                          ),
-                          ListTile(
-                            title: const Text("Mobile"),
-                            subtitle: Text(data['mobile']),
-                          ),
-                          ListTile(
-                            title: const Text("Email"),
-                            subtitle: Text(data['email']),
-                          ),
-                          Container(
-                            decoration: BoxDecoration(
-                                color: data['kycStatus'] ? const Color(0xFF039855) : const Color(0xFFff5964), borderRadius: BorderRadius.circular(5)),
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(data['kycStatus'] ? Icons.verified_user_rounded : Icons.pending_actions_rounded, color: Colors.white),
-                                const SizedBox(
-                                  width: 5,
-                                ),
-                                Text(
-                                  data['kycStatus'] ? "KYC Done" : "KYC Pending",
-                                  style: const TextStyle(color: Colors.white),
-                                ),
-                              ],
+                    } else if(snapshot.hasError){
+                      return Text(snapshot.error.toString());
+                    }else {
+                      if (snapshot.data?.statusCode == 201 || snapshot.data?.statusCode == 200) {
+                        Map<String, dynamic> data = jsonDecode(snapshot.data!.body);
+                        return Column(
+                          children: [
+                            ListTile(
+                              title: const Text("User Id"),
+                              subtitle: Text(data['userid']),
                             ),
-                          ),
-                          ListTile(
-                            title: const Text("View Devices"),
-                            trailing: const Icon(Icons.arrow_forward_rounded),
-                            onTap: () {
-                              Navigator.push(
-                                  context, MaterialPageRoute(builder: (context) => DevicesScreen(userId: data['userid'], fullName: data['Fullname'])));
-                            },
-                          ),
-                          ListTile(
-                            title: const Text("Custom Pricing"),
-                            trailing: const Icon(Icons.arrow_forward_rounded),
-                            onTap: () {
-                              Navigator.push(
-                                  context, MaterialPageRoute(builder: (context) => PricingScreen(userId: data['userid'],)));
-                            },
-                          )
-                        ],
-                      );
+                            ListTile(
+                              title: const Text("Full Name"),
+                              subtitle: Text(data['Fullname']),
+                            ),
+                            ListTile(
+                              title: const Text("Mobile"),
+                              subtitle: Text(data['mobile']),
+                            ),
+                            ListTile(
+                              title: const Text("Email"),
+                              subtitle: Text(data['email']),
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                  color: data['kycStatus'] ? const Color(0xFF039855) : const Color(0xFFff5964), borderRadius: BorderRadius.circular(5)),
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(data['kycStatus'] ? Icons.verified_user_rounded : Icons.pending_actions_rounded, color: Colors.white),
+                                  const SizedBox(
+                                    width: 5,
+                                  ),
+                                  Text(
+                                    data['kycStatus'] ? "KYC Done" : "KYC Pending",
+                                    style: const TextStyle(color: Colors.white),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            ListTile(
+                              title: const Text("View Devices"),
+                              trailing: const Icon(Icons.arrow_forward_rounded),
+                              onTap: () {
+                                Navigator.push(
+                                    context, MaterialPageRoute(builder: (context) => DevicesScreen(userId: data['userid'], fullName: data['Fullname'])));
+                              },
+                            ),
+                            ListTile(
+                              title: const Text("Custom Pricing"),
+                              trailing: const Icon(Icons.arrow_forward_rounded),
+                              onTap: () {
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => PricingScreen(
+                                              userId: data['userid'],
+                                            )));
+                              },
+                            )
+                          ],
+                        );
+                      }
+                      return Text(snapshot.error.toString());
                     }
-                    return Container();
                   })
           ],
         ),
