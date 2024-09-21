@@ -20,9 +20,13 @@ class SetPricingScreen extends StatelessWidget {
           onTap: (){
             showDialog(context: context, builder: (context){
               return AlertDialog(
-                actions: [TextButton(onPressed: (){}, child: Text("Ok"))],
-                title: Text("New Price"),
+                actions: [TextButton(onPressed: (){}, child: const Text("Ok"))],
+                title: const Text("New Price"),
                 content: TextField(
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    hintText: "Enter new price"
+                  ),
                   inputFormatters: [
                     FilteringTextInputFormatter.digitsOnly
                   ],
@@ -36,7 +40,7 @@ class SetPricingScreen extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(months[index % months.length]),
-                Text("₹ 1299")
+                const Text("₹ 1299")
               ],
             ),
           ),

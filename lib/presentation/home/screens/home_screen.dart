@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:master_circolife_app/presentation/home/screens/devices_screen.dart';
 import 'package:master_circolife_app/presentation/home/screens/pricing_screen.dart';
+import 'package:master_circolife_app/utils/constants.dart';
 import 'package:master_circolife_app/utils/secrets.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -37,6 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: TextField(
                   keyboardType: TextInputType.number,
                   controller: phoneController,
+                  onTapOutside: (event) => FocusScope.of(context).unfocus(),
                   decoration: InputDecoration(
                       contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       hintText: "Enter Customer No.",
@@ -71,33 +73,34 @@ class _HomeScreenState extends State<HomeScreen> {
                         AppSecrets.baseUrl,
                         '/api/user/${phoneController.text}',
                       ),
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                      }),
+                      headers: headers),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const CircularProgressIndicator();
-                    } else if(snapshot.hasError){
+                    } else if (snapshot.hasError) {
                       return Text(snapshot.error.toString());
-                    }else {
+                    } else {
                       if (snapshot.data?.statusCode == 201 || snapshot.data?.statusCode == 200) {
                         Map<String, dynamic> data = jsonDecode(snapshot.data!.body);
                         return Column(
                           children: [
                             ListTile(
+                              leading: const Icon(Icons.badge_outlined),
                               title: const Text("User Id"),
                               subtitle: Text(data['userid']),
                             ),
                             ListTile(
+                              leading: const Icon(Icons.person_2_outlined),
                               title: const Text("Full Name"),
                               subtitle: Text(data['Fullname']),
                             ),
                             ListTile(
+                              leading: const Icon(Icons.phone_outlined),
                               title: const Text("Mobile"),
                               subtitle: Text(data['mobile']),
                             ),
                             ListTile(
+                              leading: const Icon(Icons.email_outlined),
                               title: const Text("Email"),
                               subtitle: Text(data['email']),
                             ),

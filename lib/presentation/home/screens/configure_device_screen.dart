@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:master_circolife_app/utils/constants.dart';
 import 'package:slide_to_act/slide_to_act.dart';
 import 'dart:developer';
 import 'dart:convert';
@@ -34,19 +35,17 @@ class ConfigureDeviceScreen extends StatelessWidget {
                               onSubmit: () {
                                 AlertDialog(
                                   title: const Text("Are you sure you want to cut the subscription?"),
-                                  actions: [
-                                    TextButton(onPressed: (){}, child: const Text("OK"))
-                                  ],
+                                  actions: [TextButton(onPressed: () {}, child: const Text("OK"))],
                                 );
                                 return null;
                               },
                               borderRadius: 12,
                               elevation: 0,
                               innerColor: Colors.white,
-                              outerColor:  const Color(0xFF039855) ,
+                              outerColor: const Color(0xFF039855),
                               sliderButtonIcon: const Icon(
                                 Icons.electric_bolt,
-                                color:  Color(0xFF039855),
+                                color: Color(0xFF039855),
                               ),
                               text: "Subscription OFF >>>",
                               textStyle: const TextStyle(fontSize: 16, color: Color(0xFFFFFFFF)),
@@ -64,7 +63,7 @@ class ConfigureDeviceScreen extends StatelessWidget {
         child: Column(
           children: [
             FutureBuilder(
-                future: http.get(Uri.http(AppSecrets.baseUrl, '/api/analitics/bydays/5&$deviceId')),
+                future: http.get(Uri.http(AppSecrets.baseUrl, '/api/analitics/bydays/5&$deviceId'), headers: headers),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -80,6 +79,7 @@ class ConfigureDeviceScreen extends StatelessWidget {
                     return ListView.builder(
                       itemBuilder: (context, index) {
                         final data = response[index];
+                        List<String> values = data['rawdata'].toString().split("-");
                         DateTime dateTime = DateTime.parse(data['lastdate'].toString());
                         String date = "${dateTime.day.toString()}-${dateTime.month.toString()}-${dateTime.year.toString()}";
                         String time =
@@ -87,7 +87,7 @@ class ConfigureDeviceScreen extends StatelessWidget {
                         return ListTile(
                           title: Text(date),
                           trailing: Text(time),
-                          subtitle: Text(data['rawdata']),
+                          subtitle: Text("${values[0]} V\t\t\t${values[1]} A"),
                         );
                       },
                       itemCount: response.length,

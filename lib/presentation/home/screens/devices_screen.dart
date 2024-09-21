@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:master_circolife_app/presentation/home/screens/configure_device_screen.dart';
+import 'package:master_circolife_app/utils/constants.dart';
 
 import '../../../utils/secrets.dart';
 
@@ -27,10 +28,7 @@ class DevicesScreen extends StatelessWidget {
           child: Column(
             children: [
               FutureBuilder(
-                  future: http.get(Uri.http(AppSecrets.baseUrl,'/api/devices/$userId'), headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                  }),
+                  future: http.get(Uri.http(AppSecrets.baseUrl, '/api/devices/$userId'), headers: headers),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
@@ -46,8 +44,10 @@ class DevicesScreen extends StatelessWidget {
                             subtitle: Text(device['deviceid']),
                             trailing: const Icon(Icons.arrow_forward_rounded),
                             onTap: () {
-                              Navigator.push(context,
-                                  MaterialPageRoute(builder: (context) => ConfigureDeviceScreen(deviceId: device['deviceid'], deviceName: device['deviceName'])));
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => ConfigureDeviceScreen(deviceId: device['deviceid'], deviceName: device['deviceName'])));
                             },
                           );
                         },
@@ -55,13 +55,12 @@ class DevicesScreen extends StatelessWidget {
                         shrinkWrap: true,
                       );
                     }
-                    return Container(height: 0,);
+                    return Container(
+                      height: 0,
+                    );
                   }),
               FutureBuilder(
-                  future: http.get(Uri.http(AppSecrets.baseUrl,'/api/devices/shared/$userId'), headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                  }),
+                  future: http.get(Uri.http(AppSecrets.baseUrl, '/api/devices/shared/$userId'), headers: headers),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
@@ -73,13 +72,18 @@ class DevicesScreen extends StatelessWidget {
                         itemBuilder: (context, index) {
                           final device = data[index];
                           return ListTile(
-                            leading: const Icon(Icons.group, color: Colors.blue,),
+                            leading: const Icon(
+                              Icons.group,
+                              color: Colors.blue,
+                            ),
                             title: Text(device['deviceName']),
                             subtitle: Text(device['deviceid']),
                             trailing: const Icon(Icons.arrow_forward_rounded),
                             onTap: () {
-                              Navigator.push(context,
-                                  MaterialPageRoute(builder: (context) => ConfigureDeviceScreen(deviceId: device['deviceid'], deviceName: device['deviceName'])));
+                              Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (context) => ConfigureDeviceScreen(deviceId: device['deviceid'], deviceName: device['deviceName'])));
                             },
                           );
                         },

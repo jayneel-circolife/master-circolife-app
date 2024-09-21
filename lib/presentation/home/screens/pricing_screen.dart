@@ -2,7 +2,8 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:master_circolife_app/presentation/home/screens/SetPricingScreen.dart';
+import 'package:master_circolife_app/presentation/home/screens/set_pricing_screen.dart';
+import 'package:master_circolife_app/utils/constants.dart';
 import 'dart:convert';
 import 'package:master_circolife_app/utils/secrets.dart';
 
@@ -22,10 +23,7 @@ class PricingScreen extends StatelessWidget {
             child: Column(
           children: [
             FutureBuilder(
-                future: http.get(Uri.http(AppSecrets.baseUrl, '/api/devices/$userId'), headers: {
-                  'Content-Type': 'application/json',
-                  'Accept': 'application/json',
-                }),
+                future: http.get(Uri.http(AppSecrets.baseUrl, '/api/devices/$userId'), headers: headers),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -55,10 +53,7 @@ class PricingScreen extends StatelessWidget {
                   return Container();
                 }),
             FutureBuilder(
-                future: http.get(Uri.http(AppSecrets.baseUrl,'/api/devices/shared/$userId'), headers: {
-                  'Content-Type': 'application/json',
-                  'Accept': 'application/json',
-                }),
+                future: http.get(Uri.http(AppSecrets.baseUrl, '/api/devices/shared/$userId'), headers: headers),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -70,7 +65,10 @@ class PricingScreen extends StatelessWidget {
                       itemBuilder: (context, index) {
                         final device = data[index];
                         return ListTile(
-                          leading: const Icon(Icons.group, color: Colors.blue,),
+                          leading: const Icon(
+                            Icons.group,
+                            color: Colors.blue,
+                          ),
                           title: Text(device['deviceName']),
                           subtitle: Text(device['deviceid']),
                           trailing: const Icon(Icons.arrow_forward_rounded),
