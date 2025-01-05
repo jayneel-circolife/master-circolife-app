@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -56,7 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       setState(() {
                         validNumber = true;
                       });
-                    }
+                    } else {}
                   },
                   icon: const Icon(Icons.search),
                   enableFeedback: true,
@@ -82,66 +81,78 @@ class _HomeScreenState extends State<HomeScreen> {
                     } else {
                       if (snapshot.data?.statusCode == 201 || snapshot.data?.statusCode == 200) {
                         Map<String, dynamic> data = jsonDecode(snapshot.data!.body);
+                        String userId = data['userid'] ?? "";
+                        String fullName = data['Fullname'] ?? "";
+                        String mobile = data['mobile'] ?? "";
+                        String email = data['email'] ?? "";
+                        String onboardingDate = data['onBoardingDate'].toString().split("T")[0] ?? "";
+                        bool kycStatus = data['kycStatus'] ?? false;
                         return Column(
                           children: [
                             ListTile(
                               leading: const Icon(Icons.badge_outlined),
                               title: const Text("User Id"),
-                              subtitle: Text(data['userid']),
+                              subtitle: Text(userId),
                             ),
                             ListTile(
                               leading: const Icon(Icons.person_2_outlined),
                               title: const Text("Full Name"),
-                              subtitle: Text(data['Fullname']),
+                              subtitle: Text(fullName),
                             ),
                             ListTile(
                               leading: const Icon(Icons.phone_outlined),
                               title: const Text("Mobile"),
-                              subtitle: Text(data['mobile']),
+                              subtitle: Text(mobile),
                             ),
                             ListTile(
                               leading: const Icon(Icons.email_outlined),
                               title: const Text("Email"),
-                              subtitle: Text(data['email']),
+                              subtitle: Text(email),
+                            ),
+                            ListTile(
+                              leading: const Icon(Icons.flight_land_outlined),
+                              title: const Text("OnBoarded on"),
+                              subtitle: Text(onboardingDate),
                             ),
                             Container(
-                              decoration: BoxDecoration(
-                                  color: data['kycStatus'] ? const Color(0xFF039855) : const Color(0xFFff5964), borderRadius: BorderRadius.circular(5)),
+                              decoration:
+                                  BoxDecoration(color: kycStatus ? const Color(0xFF039855) : const Color(0xFFff5964), borderRadius: BorderRadius.circular(5)),
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(data['kycStatus'] ? Icons.verified_user_rounded : Icons.pending_actions_rounded, color: Colors.white),
+                                  Icon(kycStatus ? Icons.verified_user_rounded : Icons.pending_actions_rounded, color: Colors.white),
                                   const SizedBox(
                                     width: 5,
                                   ),
                                   Text(
-                                    data['kycStatus'] ? "KYC Done" : "KYC Pending",
+                                    kycStatus ? "KYC Done" : "KYC Pending",
                                     style: const TextStyle(color: Colors.white),
                                   ),
                                 ],
                               ),
                             ),
-                            ListTile(
-                              title: const Text("View Devices"),
-                              trailing: const Icon(Icons.arrow_forward_rounded),
-                              onTap: () {
-                                Navigator.push(
-                                    context, MaterialPageRoute(builder: (context) => DevicesScreen(userId: data['userid'], fullName: data['Fullname'])));
-                              },
-                            ),
-                            ListTile(
-                              title: const Text("Custom Pricing"),
-                              trailing: const Icon(Icons.arrow_forward_rounded),
-                              onTap: () {
-                                Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) => PricingScreen(
-                                              userId: data['userid'],
-                                            )));
-                              },
-                            )
+                            if(userId != "")...[
+                              ListTile(
+                                title: const Text("View Devices"),
+                                trailing: const Icon(Icons.arrow_forward_rounded),
+                                onTap: () {
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => DevicesScreen(userId: userId, fullName: fullName)));
+                                },
+                              ),
+                              ListTile(
+                                title: const Text("Custom Pricing"),
+                                trailing: const Icon(Icons.arrow_forward_rounded),
+                                onTap: () {
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => PricingScreen(
+                                            userId: data['userid'],
+                                          )));
+                                },
+                              )
+                            ],
                           ],
                         );
                       }
