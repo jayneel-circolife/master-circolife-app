@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:master_circolife_app/presentation/home/screens/InvoicesScreen.dart';
 import 'package:master_circolife_app/presentation/home/screens/devices_screen.dart';
 import 'package:master_circolife_app/presentation/home/screens/pricing_screen.dart';
 import 'package:master_circolife_app/utils/constants.dart';
@@ -85,6 +86,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         String fullName = data['Fullname'] ?? "";
                         String mobile = data['mobile'] ?? "";
                         String email = data['email'] ?? "";
+                        String customerId = data['customer_id'] ?? "";
                         String onboardingDate = data['onBoardingDate'].toString().split("T")[0] ?? "";
                         bool kycStatus = data['kycStatus'] ?? false;
                         return Column(
@@ -151,7 +153,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                             userId: data['userid'],
                                           )));
                                 },
-                              )
+                              ),
+                             if(customerId != "")
+                               ListTile(
+                                 title: const Text("Invoices"),
+                                 trailing: const Icon(Icons.arrow_forward_rounded),
+                                 onTap: () {
+                                   Navigator.push(context, MaterialPageRoute(builder: (context) => InvoicesScreen(customerId: customerId, userId: userId,)));
+                                 },
+                               ),
                             ],
                           ],
                         );
