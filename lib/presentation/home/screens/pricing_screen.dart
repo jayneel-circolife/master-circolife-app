@@ -23,7 +23,7 @@ class PricingScreen extends StatelessWidget {
             child: Column(
           children: [
             FutureBuilder(
-                future: http.get(Uri.http(AppSecrets.baseUrl, '/api/devices/$userId'), headers: headers),
+                future: http.get(Uri.https(AppSecrets.baseUrl, '/api/devices/$userId'), headers: headers),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -53,7 +53,7 @@ class PricingScreen extends StatelessWidget {
                   return Container();
                 }),
             FutureBuilder(
-                future: http.get(Uri.http(AppSecrets.baseUrl, '/api/devices/shared/$userId'), headers: headers),
+                future: http.get(Uri.https(AppSecrets.baseUrl, '/api/devices/shared/$userId'), headers: headers),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());

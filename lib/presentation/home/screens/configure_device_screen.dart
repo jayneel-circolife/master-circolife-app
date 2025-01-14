@@ -176,7 +176,7 @@ class ConfigureDeviceScreen extends StatelessWidget {
   }
 
   Future<void> subscriptionOff(String deviceId, BuildContext context, String command) async {
-    final url = Uri.http("35.154.99.208:5000", "api/customers/b2blogin/sendcommand");
+    final url = Uri.https(AppSecrets.baseUrl, "api/customers/b2blogin/sendcommand");
     var response = await http.post(url,
         headers: headers,
         body: jsonEncode({

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
 import 'package:master_circolife_app/presentation/home/screens/configure_device_screen.dart';
@@ -33,7 +34,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
               onPressed: () async {
                 await showMenu(context: context, position: RelativeRect.fromLTRB(MediaQuery.of(context).size.width - 10, 0, 10, 0), items: [
                   PopupMenuItem(
-                    child: Text("Select All"),
+                    child: const Text("Select All"),
                     onTap: () async {
                       log(devices.toString());
                       showModalBottomSheet(
@@ -115,7 +116,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                   )
                 ]);
               },
-              icon: const Icon(Icons.more_vert_rounded))
+              icon: const Icon(Icons.more_vert_rounded)),
         ],
       ),
       body: Padding(
@@ -124,7 +125,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
           child: Column(
             children: [
               FutureBuilder(
-                  future: http.get(Uri.http(AppSecrets.baseUrl, '/api/devices/${widget.userId}'), headers: headers),
+                  future: http.get(Uri.https(AppSecrets.baseUrl, '/api/devices/${widget.userId}'), headers: headers),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const Center(child: CircularProgressIndicator());
@@ -161,7 +162,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                     );
                   }),
               FutureBuilder(
-                  future: http.get(Uri.http(AppSecrets.baseUrl, '/api/devices/shared/${widget.userId}'), headers: headers),
+                  future: http.get(Uri.https(AppSecrets.baseUrl, '/api/devices/shared/${widget.userId}'), headers: headers),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return Container();
@@ -211,7 +212,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
   }
 
   Future<void> subscriptionOff(List<String> devices, BuildContext context, String command) async {
-    final url = Uri.http("35.154.99.208:5000", "api/customers/b2blogin/sendcommand");
+    final url = Uri.https(AppSecrets.baseUrl, "api/customers/b2blogin/sendcommand");
     var response = await http.post(url,
         headers: headers,
         body: jsonEncode({

@@ -69,7 +69,7 @@ class _HomeScreenState extends State<HomeScreen> {
             if (validNumber)
               FutureBuilder(
                   future: http.get(
-                      Uri.http(
+                      Uri.https(
                         AppSecrets.baseUrl,
                         '/api/user/${phoneController.text}',
                       ),

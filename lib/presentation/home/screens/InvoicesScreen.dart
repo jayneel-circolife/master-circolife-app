@@ -22,7 +22,7 @@ class InvoicesScreen extends StatelessWidget {
         children: [
           FutureBuilder(
               future: http.get(
-                  Uri.http(
+                  Uri.https(
                     AppSecrets.baseUrl,
                     '/api/customer/$userId',
                   ),
