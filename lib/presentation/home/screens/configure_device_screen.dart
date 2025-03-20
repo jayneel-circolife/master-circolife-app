@@ -1,7 +1,9 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:master_circolife_app/models/online_device_details.dart';
 import 'package:master_circolife_app/utils/constants.dart';
 import 'package:slide_to_act/slide_to_act.dart';
 import 'dart:convert';
@@ -9,20 +11,29 @@ import 'package:fluttertoast/fluttertoast.dart';
 
 import '../../../utils/secrets.dart';
 
-class ConfigureDeviceScreen extends StatelessWidget {
-  const ConfigureDeviceScreen({super.key, required this.deviceId, required this.deviceName});
+class ConfigureDeviceScreen extends StatefulWidget {
+  const ConfigureDeviceScreen({super.key, required this.deviceId, required this.deviceName, required this.device});
+  final OnlineDeviceDetails device;
   final String deviceId;
   final String deviceName;
+  // final Devices device;
 
   @override
+  State<ConfigureDeviceScreen> createState() => _ConfigureDeviceScreenState();
+}
+
+class _ConfigureDeviceScreenState extends State<ConfigureDeviceScreen> {
+  @override
   Widget build(BuildContext context) {
+    TextEditingController phoneController = TextEditingController();
+    // MqttManager mqtt = MqttManager();
     return Scaffold(
       appBar: AppBar(
-        title: Text(deviceName),
+        title: Text(widget.device.deviceName.toString()),
         actions: [
           IconButton(
-              onPressed: () {
-                showModalBottomSheet(
+              onPressed: () async {
+                await showModalBottomSheet(
                     context: context,
                     builder: (context) {
                       return Container(
@@ -33,69 +44,171 @@ class ConfigureDeviceScreen extends StatelessWidget {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Text("Slide to cut off Subscription"),
-                            SlideAction(
-                              onSubmit: () {
-                                cutOffSubscription(deviceId, context, "!suboffon");
-                                return null;
-                              },
-                              borderRadius: 12,
-                              elevation: 0,
-                              innerColor: Colors.white,
-                              outerColor: const Color(0xFFF34545),
-                              sliderButtonIcon: const Icon(
-                                Icons.cut,
-                                color: Color(0xFFF34545),
-                              ),
-                              text: "Subscription OFF >>>",
-                              textStyle: const TextStyle(fontSize: 16, color: Color(0xFFFFFFFF)),
-                            ),
-                            const SizedBox(
-                              height: 20,
-                            ),
-                            const Text("Slide to resume Subscription"),
-                            SlideAction(
-                              onSubmit: () {
-                                cutOffSubscription(deviceId, context, "!suboffoff");
-                                return null;
-                              },
-                              borderRadius: 12,
-                              elevation: 0,
-                              innerColor: Colors.white,
-                              outerColor: const Color(0xFF039855),
-                              sliderButtonIcon: const Icon(
-                                Icons.electric_bolt,
-                                color: Color(0xFF039855),
-                              ),
-                              text: "Subscription ON >>>",
-                              textStyle: const TextStyle(fontSize: 16, color: Color(0xFFFFFFFF)),
-                            ),
-                            const SizedBox(
-                              height: 20,
-                            ),
                             Row(
                               children: [
-                                ElevatedButton(
-                                    onPressed: () async {
-                                      DateTime dt = DateTime.now();
-                                      DateTime? expiryDate = await showDatePicker(
-                                          context: context, firstDate: DateTime(dt.year, dt.month, dt.day - 1), lastDate: DateTime(dt.year + 10));
-                                      if (expiryDate != null) {
-                                        String expiry =
-                                            "E~${(expiryDate!.day).toString().padLeft(2, "0")}~${(expiryDate.month).toString().padLeft(2, "0")}~${expiryDate.year}";
-                                        log(expiry, name: "Expiry Date >");
-                                        cutOffSubscription(deviceId, context, expiry);
+                                Expanded(
+                                    child: TextField(
+                                  keyboardType: TextInputType.number,
+                                  controller: phoneController,
+                                  onTapOutside: (event) => FocusScope.of(context).unfocus(),
+                                  decoration: InputDecoration(
+                                      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                      hintText: "Enter Customer No.",
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      counterText: "",
+                                      prefix: const Text(" +91  ")),
+                                  maxLength: 10,
+                                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                )),
+                                IconButton(
+                                  onPressed: () async {
+                                    if (phoneController.text.length == 10) {
+                                      var response = await http.get(Uri.https(AppSecrets.baseUrl, "/api/user/${phoneController.text}"));
+                                      if (response.statusCode == 200 || response.statusCode == 201) {
+                                        Map<String, dynamic> data = jsonDecode(response.body.toString());
+                                        log(data["userid"], name: "UserDATA");
+                                        log(widget.deviceId, name: "Device Id >");
+                                        Map<String, dynamic> deviceData = {
+                                          "userid": data["userid"],
+                                          "deviceid": widget.deviceId,
+                                          "deviceName": widget.deviceName,
+                                          "isShared": false,
+                                          "isadmin": true,
+                                          "receiversid": "",
+                                          "sendersName": "",
+                                          "receiversName": "",
+                                          "deviceType": "Split"
+                                        };
+                                        log(deviceData.toString(), name: "Payload");
+                                        var deviceResponse =
+                                            await http.post(Uri.https(AppSecrets.baseUrl, "/api/devices/"), body: jsonEncode(deviceData), headers: headers);
+                                        if (deviceResponse.statusCode == 200 || deviceResponse.statusCode == 201) {
+                                          Fluttertoast.showToast(msg: "Device Added Successfully");
+                                        } else {
+                                          log(deviceResponse.body.toString(), name: "Payload");
+                                        }
+                                      } else {
+                                        Fluttertoast.showToast(msg: "User does not exists!");
                                       }
-                                    },
-                                    child: const Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [Text("Extend Expiry")],
-                                    )),
+                                    } else {}
+                                  },
+                                  icon: const Icon(Icons.send_outlined),
+                                  enableFeedback: true,
+                                )
                               ],
-                            )
+                            ),
                           ],
                         ),
                       );
+                    });
+              },
+              icon: const Icon(Icons.add_to_home_screen_rounded)),
+          IconButton(
+              onPressed: () {
+                showModalBottomSheet(
+                    context: context,
+                    builder: (context) {
+                      bool startTimeSet = false;
+                      TimeOfDay startTime = const TimeOfDay(hour: 8, minute: 0);
+                      return StatefulBuilder(builder: (context, bottomState) {
+                        return Container(
+                          width: double.maxFinite,
+                          padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
+                          decoration: const BoxDecoration(
+                              color: Colors.white, borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10))),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text("Select time"),
+                              InkWell(
+                                onTap: () async {
+                                  TimeOfDay? dt = await showTimePicker(context: context, initialTime: startTime);
+                                  log(dt.toString(), name: "From Time >");
+                                  bottomState(() {
+                                    startTime = dt!;
+                                    startTimeSet = true;
+                                  });
+                                  log(dt.toString(), name: "From Time >");
+                                },
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    border: Border.all(color: const Color(0xFFD6D6D6)),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+                                  child: Text(
+                                    startTime.format(context),
+                                    style: TextStyle(color: startTimeSet ? const Color(0xFF1D2939) : const Color(0xFF667085), fontSize: 18),
+                                  ),
+                                ),
+                              ),
+                              const Text("Slide to cut off Subscription"),
+                              SlideAction(
+                                onSubmit: () {
+                                  cutOffSubscription(widget.deviceId, context, "!suboffon");
+                                  return null;
+                                },
+                                borderRadius: 12,
+                                elevation: 0,
+                                innerColor: Colors.white,
+                                outerColor: const Color(0xFFF34545),
+                                sliderButtonIcon: const Icon(
+                                  Icons.cut,
+                                  color: Color(0xFFF34545),
+                                ),
+                                text: "Subscription OFF >>>",
+                                textStyle: const TextStyle(fontSize: 16, color: Color(0xFFFFFFFF)),
+                              ),
+                              const SizedBox(
+                                height: 20,
+                              ),
+                              const Text("Slide to resume Subscription"),
+                              SlideAction(
+                                onSubmit: () {
+                                  cutOffSubscription(widget.deviceId, context, "!suboffoff");
+                                  return null;
+                                },
+                                borderRadius: 12,
+                                elevation: 0,
+                                innerColor: Colors.white,
+                                outerColor: const Color(0xFF039855),
+                                sliderButtonIcon: const Icon(
+                                  Icons.electric_bolt,
+                                  color: Color(0xFF039855),
+                                ),
+                                text: "Subscription ON >>>",
+                                textStyle: const TextStyle(fontSize: 16, color: Color(0xFFFFFFFF)),
+                              ),
+                              const SizedBox(
+                                height: 20,
+                              ),
+                              Row(
+                                children: [
+                                  ElevatedButton(
+                                      onPressed: () async {
+                                        DateTime dt = DateTime.now();
+                                        DateTime? expiryDate = await showDatePicker(
+                                            context: context, firstDate: DateTime(dt.year, dt.month, dt.day - 1), lastDate: DateTime(dt.year + 10));
+                                        if (expiryDate != null) {
+                                          String expiry =
+                                              "E~${(expiryDate!.day).toString().padLeft(2, "0")}~${(expiryDate.month).toString().padLeft(2, "0")}~${expiryDate.year}~${(startTime.hour).toString().padLeft(2, "0")}";
+                                          log(expiry, name: "Expiry Date >");
+                                          cutOffSubscription(widget.deviceId, context, expiry);
+                                        }
+                                      },
+                                      child: const Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [Text("Extend Expiry")],
+                                      )),
+                                ],
+                              )
+                            ],
+                          ),
+                        );
+                      });
                     });
               },
               icon: const Icon(Icons.settings))
@@ -106,9 +219,21 @@ class ConfigureDeviceScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.center,
+            //   children: [
+            //     Icon(
+            //       widget.device.isconnected ? Icons.wifi : Icons.wifi_off_rounded,
+            //       color: widget.device.isconnected ? Colors.green : Colors.blueGrey,
+            //     ),
+            //     Text(
+            //       widget.device.isconnected ? "Wifi Connected" : "Offline",
+            //     )
+            //   ],
+            // ),
             const Text("Latest State"),
             FutureBuilder(
-                future: http.get(Uri.https("production.circolife.vip", '/api/analItics/checdeviceStatus/getdeviceActive/$deviceId'), headers: headers),
+                future: http.get(Uri.https("production.circolife.vip", '/api/analItics/checdeviceStatus/getdeviceActive/${widget.deviceId}'), headers: headers),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -131,15 +256,14 @@ class ConfigureDeviceScreen extends StatelessWidget {
                         String time =
                             "${dateTime.hour.toString()}:${dateTime.minute.toString()}:${dateTime.second.toString()} ${(dateTime.hour >= 12) ? "PM" : "AM"}";
                         bool powerStatus = (commands.contains("!on")) ? true : false;
-                        String temp = commands.split("!tem")[1].substring(0,2) ?? "";
+                        String temp = commands.split("!tem")[1].substring(0, 2) ?? "";
                         return ListTile(
                             title: Text("Date: $date\t\t\tTime: $time"),
                             subtitle: Row(
                               children: [
                                 Container(
                                   padding: const EdgeInsets.all(10),
-                                  decoration:
-                                      BoxDecoration(color: (powerStatus) ? Colors.green : Colors.red, borderRadius: BorderRadius.circular(5)),
+                                  decoration: BoxDecoration(color: (powerStatus) ? Colors.green : Colors.red, borderRadius: BorderRadius.circular(5)),
                                   child: Text(
                                     (powerStatus) ? "ON" : "OFF",
                                     style: const TextStyle(color: Colors.white),
@@ -163,7 +287,7 @@ class ConfigureDeviceScreen extends StatelessWidget {
                       shrinkWrap: true,
                     );
                   }
-                  return Text("No Data Found");
+                  return const Text("No Data Found");
                 })
           ],
         ),
