@@ -24,7 +24,7 @@ class InvoicesScreen extends StatelessWidget {
               future: http.get(
                   Uri.https(
                     AppSecrets.baseUrl,
-                    '/api/customer/$userId',
+                    '/api/invoice/$customerId/inv',
                   ),
                   headers: headers),
               builder: (context, snapshot) {
@@ -34,17 +34,19 @@ class InvoicesScreen extends StatelessWidget {
                   return Text(snapshot.error.toString());
                 } else {
                   if (snapshot.data?.statusCode == 200) {
-                    List<dynamic> data = jsonDecode(snapshot.data!.body);
+                    List<dynamic> data = jsonDecode(snapshot.data!.body)["data"];
                     return ListView.builder(
                       physics: const NeverScrollableScrollPhysics(),
                       itemBuilder: (context, index) {
                         Map<String, dynamic> invoice = data[index];
+                        bool isPaid = invoice["payment_status"] == "paid";
                         return ListTile(
-                          title: Text("Rs.${invoice["price"]}"),
-                          trailing: Text(invoice["date"]),
-                          onTap: (){
-
-                          },
+                          title: Text("Rs.${invoice["subscription_price"]}"),
+                          subtitle: Text(
+                            isPaid ? "Paid" : "Unpaid",
+                            style: TextStyle(color: isPaid ? const Color(0xFF1EAD12) : const Color(0xFFD01515), fontSize: 12),
+                          ),
+                          trailing: Text(invoice["current_payment_date"].toString().split("T")[0]),
                         );
                       },
                       itemCount: data.length,

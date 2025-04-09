@@ -2,17 +2,12 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:hive_flutter/adapters.dart';
 import 'package:http/http.dart' as http;
 import 'package:master_circolife_app/presentation/home/screens/configure_device_screen.dart';
 import 'package:master_circolife_app/utils/constants.dart';
-import 'package:master_circolife_app/utils/mqtt_manager.dart';
-import 'package:provider/provider.dart';
 import 'package:slide_to_act/slide_to_act.dart';
 
-import '../../../models/hiveModels/devices.dart';
 import '../../../models/online_device_details.dart';
 import '../../../utils/secrets.dart';
 
@@ -35,6 +30,8 @@ class _DevicesScreenState extends State<DevicesScreen> {
   @override
   void initState() {
     super.initState();
+    ownedDevices.clear();
+    sharedDevices.clear();
     // devicesBox = Hive.box<Devices>("master");
 
     // devicesBox?.clear();
@@ -44,30 +41,66 @@ class _DevicesScreenState extends State<DevicesScreen> {
 
   @override
   Widget build(BuildContext context) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(
-            "${widget.fullName} Devices",
-          ),
-          actions: [
-            IconButton(
-                onPressed: () async {
-                  await showMenu(context: context, position: RelativeRect.fromLTRB(MediaQuery.of(context).size.width - 10, 0, 10, 0), items: [
-                    PopupMenuItem(
-                      child: const Text("Select All"),
-                      onTap: () async {
-                        log(devices.toString());
-                        showModalBottomSheet(
-                            context: context,
-                            builder: (context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          "${widget.fullName} Devices",
+        ),
+        actions: [
+          IconButton(
+              onPressed: () async {
+                await showMenu(context: context, position: RelativeRect.fromLTRB(MediaQuery.of(context).size.width - 10, 0, 10, 0), items: [
+                  PopupMenuItem(
+                    child: const Text("Select All"),
+                    onTap: () async {
+                      log(devices.toString());
+                      showModalBottomSheet(
+                          context: context,
+                          builder: (context) {
+                            bool startTimeSet = false;
+                            TimeOfDay startTime = const TimeOfDay(hour: 8, minute: 0);
+                            return StatefulBuilder(builder: (context, bottomState) {
                               return Container(
                                 width: double.maxFinite,
                                 padding: const EdgeInsets.fromLTRB(16, 10, 16, 20),
                                 decoration: const BoxDecoration(
                                     color: Colors.white, borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10))),
                                 child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
+                                    const Text("Select time"),
+                                    const SizedBox(
+                                      height: 5,
+                                    ),
+                                    InkWell(
+                                      onTap: () async {
+                                        TimeOfDay? dt = await showTimePicker(context: context, initialTime: startTime);
+                                        log(dt.toString(), name: "From Time >");
+                                        bottomState(() {
+                                          startTime = dt!;
+                                          startTimeSet = true;
+                                        });
+                                        log(dt.toString(), name: "From Time >");
+                                      },
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          border: Border.all(color: const Color(0xFFD6D6D6)),
+                                          borderRadius: BorderRadius.circular(6),
+                                        ),
+                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
+                                        child: Text(
+                                          startTime.format(context),
+                                          style: TextStyle(
+                                              color: startTimeSet ? const Color(0xFF1D2939) : const Color(0xFF667085),
+                                              fontSize: 18,
+                                              fontWeight: startTimeSet ? FontWeight.w600 : FontWeight.w400),
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: 20,
+                                    ),
                                     const Text("Slide to cut off Subscription"),
                                     SlideAction(
                                       onSubmit: () {
@@ -117,7 +150,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                                                   context: context, firstDate: DateTime(dt.year, dt.month, dt.day - 1), lastDate: DateTime(dt.year + 10));
                                               if (expiryDate != null) {
                                                 String expiry =
-                                                    "E~${(expiryDate!.day).toString().padLeft(2, "0")}~${(expiryDate.month).toString().padLeft(2, "0")}~${expiryDate.year}";
+                                                    "E~${(expiryDate!.day).toString().padLeft(2, "0")}~${(expiryDate.month).toString().padLeft(2, "0")}~${expiryDate.year}~${startTime.hour.toString().padLeft(2, "0")}";
                                                 log(expiry, name: "Expiry Date >");
                                                 cutOffSubscription(devices, context, expiry);
                                               }
@@ -132,189 +165,204 @@ class _DevicesScreenState extends State<DevicesScreen> {
                                 ),
                               );
                             });
+                          });
+                    },
+                  )
+                ]);
+              },
+              icon: const Icon(Icons.more_vert_rounded)),
+        ],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 5, 16, 16),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // FutureBuilder(
+              //     future: http.get(Uri.https(AppSecrets.baseUrl, '/api/devices/${widget.userId}'), headers: headers),
+              //     builder: (context, snapshot) {
+              //       if (snapshot.connectionState == ConnectionState.waiting) {
+              //         return const Center(child: CircularProgressIndicator());
+              //       }
+              //       if (snapshot.data?.statusCode == 200) {
+              //         List<dynamic> data = jsonDecode(snapshot.data!.body);
+              //         return ListView.builder(
+              //           physics: const NeverScrollableScrollPhysics(),
+              //           itemBuilder: (context, index) {
+              //             final device = data[index];
+              //             if (device['receiversid'] == "") {
+              //               devices.add(device['deviceid'].toString());
+              //               List<OnlineDeviceDetails> deviceslist =
+              //                   json.decode(snapshot.data!.body).map<OnlineDeviceDetails>((json) => OnlineDeviceDetails.fromJson(json)).toList();
+              //
+              //               for (OnlineDeviceDetails device in deviceslist) {
+              //                 if (device.isShared == false) {
+              //                   Devices deviceData = Devices(
+              //                     deviceId: device.deviceid!,
+              //                     deviceType: device.deviceType ?? "Split",
+              //                     deviceName: device.deviceName!,
+              //                     deviceTemp: 24,
+              //                     deviceStatus: true,
+              //                     deviceMode: "Cooling",
+              //                     isadmin: true,
+              //                     fanspeed: 2,
+              //                     did: device.did!,
+              //                     sensordata: "",
+              //                     econsumption: 0,
+              //                     isconnected: false,
+              //                   );
+              //                   log(deviceData.deviceId.toString(), name: "Device ID>");
+              //                   // Check if the device already exists in Hive
+              //                   final existingDeviceIndex = devicesBox!.values.toList().indexWhere((d) => d.deviceId == device.deviceid);
+              //
+              //                   if (existingDeviceIndex != -1) {
+              //                     // Update the existing device
+              //                     devicesBox!.putAt(existingDeviceIndex, deviceData);
+              //                   } else {
+              //                     // Add the new device
+              //                     devicesBox!.add(deviceData);
+              //                   }
+              //                 }
+              //               }
+              //               mqttsupport.onConnect();
+              //
+              //               return ListTile(
+              //                 title: Text(device['deviceName']),
+              //                 subtitle: Text(device['deviceid']),
+              //                 trailing: const Icon(Icons.arrow_forward_rounded),
+              //                 onTap: () {
+              //                   Navigator.push(
+              //                       context,
+              //                       MaterialPageRoute(
+              //                           builder: (context) => ConfigureDeviceScreen(deviceId: device['deviceid'], deviceName: device['deviceName'])));
+              //                 },
+              //               );
+              //             } else {
+              //               return Container();
+              //             }
+              //           },
+              //           itemCount: data.length,
+              //           shrinkWrap: true,
+              //         );
+              //       }
+              //       return Container(
+              //         height: 0,
+              //       );
+              //     }),
+              // FutureBuilder(
+              //     future: http.get(Uri.https(AppSecrets.baseUrl, '/api/devices/shared/${widget.userId}'), headers: headers),
+              //     builder: (context, snapshot) {
+              //       if (snapshot.connectionState == ConnectionState.waiting) {
+              //         return Container();
+              //       }
+              //       if (snapshot.data?.statusCode == 200) {
+              //         List<dynamic> data = jsonDecode(snapshot.data!.body);
+              //         return MediaQuery.removePadding(
+              //           context: context,
+              //           removeTop: true,
+              //           child: ListView.builder(
+              //             physics: const NeverScrollableScrollPhysics(),
+              //             itemBuilder: (context, index) {
+              //               final device = data[index];
+              //               devices.add(device['deviceid'].toString());
+              //               return ListTile(
+              //                 leading: const Icon(
+              //                   Icons.group,
+              //                   color: Colors.blue,
+              //                 ),
+              //                 title: Text(device['deviceName']),
+              //                 subtitle: Text(device['deviceid']),
+              //                 trailing: const Icon(Icons.arrow_forward_rounded),
+              //                 onTap: () {
+              //                   MqttManager mqtt = MqttManager();
+              //                   Navigator.push(
+              //                       context,
+              //                       MaterialPageRoute(
+              //                           builder: (context) => ConfigureDeviceScreen(deviceId: device['deviceid'], deviceName: device['deviceName'])));
+              //                 },
+              //               );
+              //             },
+              //             itemCount: data.length,
+              //             shrinkWrap: true,
+              //           ),
+              //         );
+              //       }
+              //       return Container();
+              //     }),
+              MediaQuery.removePadding(
+                context: context,
+                removeTop: true,
+                removeBottom: true,
+                child: ListView.builder(
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    OnlineDeviceDetails device = ownedDevices[index];
+                    devices.add(device.deviceid.toString());
+                    log(device.deviceid.toString(), name: "${device.deviceName.toString()} ->");
+                    log(ownedDevices.length.toString(), name: "OWNED DEVICES ->");
+                    // Devices ownedDevice = Devices(deviceId: device.deviceid.toString(), deviceType: device.deviceType.toString(), deviceName: device.deviceName.toString(), deviceTemp: 24, deviceStatus: true, deviceMode: "deviceMode", isadmin: true, fanspeed: 1, did: "", sensordata: "", isconnected: true, econsumption: 0.0);
+                    // devicesBox?.add(ownedDevice);
+                    return ListTile(
+                      title: Text(device.deviceName.toString()),
+                      subtitle: Text(device.deviceid.toString()),
+                      trailing: const Icon(Icons.arrow_forward_rounded),
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ConfigureDeviceScreen(
+                                      deviceId: device.deviceid.toString(),
+                                      deviceName: device.deviceName.toString(),
+                                      device: device,
+                                    )));
                       },
-                    )
-                  ]);
-                },
-                icon: const Icon(Icons.more_vert_rounded)),
-          ],
-        ),
-        body: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 5, 16, 16),
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                // FutureBuilder(
-                //     future: http.get(Uri.https(AppSecrets.baseUrl, '/api/devices/${widget.userId}'), headers: headers),
-                //     builder: (context, snapshot) {
-                //       if (snapshot.connectionState == ConnectionState.waiting) {
-                //         return const Center(child: CircularProgressIndicator());
-                //       }
-                //       if (snapshot.data?.statusCode == 200) {
-                //         List<dynamic> data = jsonDecode(snapshot.data!.body);
-                //         return ListView.builder(
-                //           physics: const NeverScrollableScrollPhysics(),
-                //           itemBuilder: (context, index) {
-                //             final device = data[index];
-                //             if (device['receiversid'] == "") {
-                //               devices.add(device['deviceid'].toString());
-                //               List<OnlineDeviceDetails> deviceslist =
-                //                   json.decode(snapshot.data!.body).map<OnlineDeviceDetails>((json) => OnlineDeviceDetails.fromJson(json)).toList();
-                //
-                //               for (OnlineDeviceDetails device in deviceslist) {
-                //                 if (device.isShared == false) {
-                //                   Devices deviceData = Devices(
-                //                     deviceId: device.deviceid!,
-                //                     deviceType: device.deviceType ?? "Split",
-                //                     deviceName: device.deviceName!,
-                //                     deviceTemp: 24,
-                //                     deviceStatus: true,
-                //                     deviceMode: "Cooling",
-                //                     isadmin: true,
-                //                     fanspeed: 2,
-                //                     did: device.did!,
-                //                     sensordata: "",
-                //                     econsumption: 0,
-                //                     isconnected: false,
-                //                   );
-                //                   log(deviceData.deviceId.toString(), name: "Device ID>");
-                //                   // Check if the device already exists in Hive
-                //                   final existingDeviceIndex = devicesBox!.values.toList().indexWhere((d) => d.deviceId == device.deviceid);
-                //
-                //                   if (existingDeviceIndex != -1) {
-                //                     // Update the existing device
-                //                     devicesBox!.putAt(existingDeviceIndex, deviceData);
-                //                   } else {
-                //                     // Add the new device
-                //                     devicesBox!.add(deviceData);
-                //                   }
-                //                 }
-                //               }
-                //               mqttsupport.onConnect();
-                //
-                //               return ListTile(
-                //                 title: Text(device['deviceName']),
-                //                 subtitle: Text(device['deviceid']),
-                //                 trailing: const Icon(Icons.arrow_forward_rounded),
-                //                 onTap: () {
-                //                   Navigator.push(
-                //                       context,
-                //                       MaterialPageRoute(
-                //                           builder: (context) => ConfigureDeviceScreen(deviceId: device['deviceid'], deviceName: device['deviceName'])));
-                //                 },
-                //               );
-                //             } else {
-                //               return Container();
-                //             }
-                //           },
-                //           itemCount: data.length,
-                //           shrinkWrap: true,
-                //         );
-                //       }
-                //       return Container(
-                //         height: 0,
-                //       );
-                //     }),
-                // FutureBuilder(
-                //     future: http.get(Uri.https(AppSecrets.baseUrl, '/api/devices/shared/${widget.userId}'), headers: headers),
-                //     builder: (context, snapshot) {
-                //       if (snapshot.connectionState == ConnectionState.waiting) {
-                //         return Container();
-                //       }
-                //       if (snapshot.data?.statusCode == 200) {
-                //         List<dynamic> data = jsonDecode(snapshot.data!.body);
-                //         return MediaQuery.removePadding(
-                //           context: context,
-                //           removeTop: true,
-                //           child: ListView.builder(
-                //             physics: const NeverScrollableScrollPhysics(),
-                //             itemBuilder: (context, index) {
-                //               final device = data[index];
-                //               devices.add(device['deviceid'].toString());
-                //               return ListTile(
-                //                 leading: const Icon(
-                //                   Icons.group,
-                //                   color: Colors.blue,
-                //                 ),
-                //                 title: Text(device['deviceName']),
-                //                 subtitle: Text(device['deviceid']),
-                //                 trailing: const Icon(Icons.arrow_forward_rounded),
-                //                 onTap: () {
-                //                   MqttManager mqtt = MqttManager();
-                //                   Navigator.push(
-                //                       context,
-                //                       MaterialPageRoute(
-                //                           builder: (context) => ConfigureDeviceScreen(deviceId: device['deviceid'], deviceName: device['deviceName'])));
-                //                 },
-                //               );
-                //             },
-                //             itemCount: data.length,
-                //             shrinkWrap: true,
-                //           ),
-                //         );
-                //       }
-                //       return Container();
-                //     }),
-                MediaQuery.removePadding(
-                  context: context,
-                  removeTop: true,
-                  removeBottom: true,
-                  child: ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      OnlineDeviceDetails device = ownedDevices[index];
-                      devices.add(device.deviceid.toString());
-                      // Devices ownedDevice = Devices(deviceId: device.deviceid.toString(), deviceType: device.deviceType.toString(), deviceName: device.deviceName.toString(), deviceTemp: 24, deviceStatus: true, deviceMode: "deviceMode", isadmin: true, fanspeed: 1, did: "", sensordata: "", isconnected: true, econsumption: 0.0);
-                      // devicesBox?.add(ownedDevice);
-                      return ListTile(
-                        title: Text(device.deviceName.toString()),
-                        subtitle: Text(device.deviceid.toString()),
-                        trailing: const Icon(Icons.arrow_forward_rounded),
-                        onTap: () {
-                          Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => ConfigureDeviceScreen(deviceId: device.deviceid.toString(), deviceName: device.deviceName.toString(), device: device,)));
-                        },
-                      );
-                    },
-                    itemCount: ownedDevices.length,
-                    shrinkWrap: true,
-                  ),
+                    );
+                  },
+                  itemCount: ownedDevices.length,
+                  shrinkWrap: true,
                 ),
-                MediaQuery.removePadding(
-                  context: context,
-                  removeTop: true,
-                  child: ListView.builder(
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      OnlineDeviceDetails device = sharedDevices[index];
-                      devices.add(device.deviceid.toString());
-                      // Devices sharedDevice = Devices(deviceId: device.deviceid.toString(), deviceType: device.deviceType.toString(), deviceName: device.deviceName.toString(), deviceTemp: 24, deviceStatus: true, deviceMode: "deviceMode", isadmin: true, fanspeed: 1, did: "", sensordata: "", isconnected: true, econsumption: 0.0);
-                      // devicesBox?.add(sharedDevice);
-                      return ListTile(
-                        leading: const Icon(
-                          Icons.group,
-                          color: Colors.blue,
-                        ),
-                        title: Text(device.deviceName.toString()),
-                        subtitle: Text(device.deviceid.toString()),
-                        trailing: const Icon(Icons.arrow_forward_rounded),
-                        onTap: () {
-                          Navigator.push(context,
-                              MaterialPageRoute(builder: (context) => ConfigureDeviceScreen(deviceId: device.deviceid.toString(), deviceName: device.deviceName.toString(), device: device,)));
-                        },
-                      );
-                    },
-                    itemCount: sharedDevices.length,
-                    shrinkWrap: true,
-                  ),
+              ),
+              MediaQuery.removePadding(
+                context: context,
+                removeTop: true,
+                child: ListView.builder(
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    OnlineDeviceDetails device = sharedDevices[index];
+                    devices.add(device.deviceid.toString());
+                    log(device.deviceid.toString(), name: "${device.deviceName.toString()} ->");
+                    log(sharedDevices.length.toString(), name: "SHARED DEVICES ->");
+                    // Devices sharedDevice = Devices(deviceId: device.deviceid.toString(), deviceType: device.deviceType.toString(), deviceName: device.deviceName.toString(), deviceTemp: 24, deviceStatus: true, deviceMode: "deviceMode", isadmin: true, fanspeed: 1, did: "", sensordata: "", isconnected: true, econsumption: 0.0);
+                    // devicesBox?.add(sharedDevice);
+                    return ListTile(
+                      leading: const Icon(
+                        Icons.group,
+                        color: Colors.blue,
+                      ),
+                      title: Text(device.deviceName.toString()),
+                      subtitle: Text(device.deviceid.toString()),
+                      trailing: const Icon(Icons.arrow_forward_rounded),
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => ConfigureDeviceScreen(
+                                      deviceId: device.deviceid.toString(),
+                                      deviceName: device.deviceName.toString(),
+                                      device: device,
+                                    )));
+                      },
+                    );
+                  },
+                  itemCount: sharedDevices.length,
+                  shrinkWrap: true,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
-      );
+      ),
+    );
   }
 
   void cutOffSubscription(List<String> deviceIds, BuildContext context, String command) async {
@@ -334,6 +382,15 @@ class _DevicesScreenState extends State<DevicesScreen> {
       }
     } else {
       Fluttertoast.showToast(msg: "Issue Code > ${response.statusCode}");
+    }
+    await Future.delayed(const Duration(seconds: 1));
+    if (command.startsWith("E~")) {
+      var rebootResponse = await http.post(url, headers: headers, body: jsonEncode({"devices": devices, "command": "!rbt"}));
+      if (rebootResponse.statusCode == 201 || rebootResponse.statusCode == 200) {
+        Fluttertoast.showToast(msg: "Rebooting ${devices.length} AC");
+      } else {
+        Fluttertoast.showToast(msg: "Issue Code > ${rebootResponse.statusCode}");
+      }
     }
   }
 
@@ -373,8 +430,8 @@ class _DevicesScreenState extends State<DevicesScreen> {
     }
   }
 
-  void getAllDevices() {
-    getDevices();
-    getSharedDevices();
+  void getAllDevices() async {
+    await getDevices();
+    await getSharedDevices();
   }
 }

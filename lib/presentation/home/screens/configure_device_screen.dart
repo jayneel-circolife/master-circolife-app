@@ -42,8 +42,12 @@ class _ConfigureDeviceScreenState extends State<ConfigureDeviceScreen> {
                         decoration: const BoxDecoration(
                             color: Colors.white, borderRadius: BorderRadius.only(topLeft: Radius.circular(10), topRight: Radius.circular(10))),
                         child: Column(
-                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            const Text(
+                              "Share device to",
+                              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 23),
+                            ),
                             Row(
                               children: [
                                 Expanded(
@@ -123,6 +127,9 @@ class _ConfigureDeviceScreenState extends State<ConfigureDeviceScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Text("Select time"),
+                              const SizedBox(
+                                height: 5,
+                              ),
                               InkWell(
                                 onTap: () async {
                                   TimeOfDay? dt = await showTimePicker(context: context, initialTime: startTime);
@@ -141,11 +148,20 @@ class _ConfigureDeviceScreenState extends State<ConfigureDeviceScreen> {
                                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
                                   child: Text(
                                     startTime.format(context),
-                                    style: TextStyle(color: startTimeSet ? const Color(0xFF1D2939) : const Color(0xFF667085), fontSize: 18),
+                                    style: TextStyle(
+                                        color: startTimeSet ? const Color(0xFF1D2939) : const Color(0xFF667085),
+                                        fontSize: 18,
+                                        fontWeight: startTimeSet ? FontWeight.w600 : FontWeight.w400),
                                   ),
                                 ),
                               ),
+                              const SizedBox(
+                                height: 20,
+                              ),
                               const Text("Slide to cut off Subscription"),
+                              const SizedBox(
+                                height: 5,
+                              ),
                               SlideAction(
                                 onSubmit: () {
                                   cutOffSubscription(widget.deviceId, context, "!suboffon");
@@ -166,6 +182,9 @@ class _ConfigureDeviceScreenState extends State<ConfigureDeviceScreen> {
                                 height: 20,
                               ),
                               const Text("Slide to resume Subscription"),
+                              const SizedBox(
+                                height: 5,
+                              ),
                               SlideAction(
                                 onSubmit: () {
                                   cutOffSubscription(widget.deviceId, context, "!suboffoff");
@@ -315,9 +334,22 @@ class _ConfigureDeviceScreenState extends State<ConfigureDeviceScreen> {
       } else {
         Fluttertoast.showToast(msg: "Expiry $command Sent Successfully! ");
       }
-      // ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Ac Subscription Turned OFF Successfully")));
     } else {
       Fluttertoast.showToast(msg: "Issue Code > ${response.statusCode}");
+    }
+    await Future.delayed(const Duration(seconds: 1));
+    if (command.startsWith("E~")) {
+      var rebootResponse = await http.post(url,
+          headers: headers,
+          body: jsonEncode({
+            "devices": [deviceId],
+            "command": "!rbt"
+          }));
+      if (rebootResponse.statusCode == 201 || rebootResponse.statusCode == 200) {
+        Fluttertoast.showToast(msg: "Rebooting");
+      } else {
+        Fluttertoast.showToast(msg: "Issue Code > ${rebootResponse.statusCode}");
+      }
     }
   }
 }
