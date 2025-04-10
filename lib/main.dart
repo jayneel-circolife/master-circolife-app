@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:master_circolife_app/firebase_options.dart';
 import 'package:master_circolife_app/presentation/auth/login_screen.dart';
+import 'package:master_circolife_app/presentation/auth/splash_screen.dart';
 import 'package:master_circolife_app/utils/mqtt_manager.dart';
+import 'package:master_circolife_app/utils/stroage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'dart:developer';
@@ -16,12 +18,13 @@ void main() {
   baseApp();
 }
 
+final EncryptedSharedPrefManager? appStorage = EncryptedSharedPrefManager.getInstance();
+
 Future<void> baseApp() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   runApp(const MyApp());
 }
-
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -35,7 +38,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         fontFamily: "Inter",
       ),
-      home: const LoginScreen(),
+      home: const SplashScreen(),
     );
   }
 }

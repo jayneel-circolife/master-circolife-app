@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:developer' as dev;
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:master_circolife_app/presentation/auth/otp_screen.dart';
 
 import '../../widgets/button_styles.dart';
 import '../../widgets/number_text_field.dart';
@@ -22,7 +24,9 @@ class _LoginScreenState extends State<LoginScreen> {
   void initState() {
     super.initState();
     phoneNumberController.addListener(() {
-      numberLength = phoneNumberController.text.length;
+      setState(() {
+        numberLength = phoneNumberController.text.length;
+      });
     });
   }
 
@@ -35,6 +39,7 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Stack(
             children: [
               Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text("Enter your phone number"),
                   const SizedBox(
@@ -56,13 +61,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   alignment: Alignment.bottomCenter,
                   child: ElevatedButton(
                     onPressed: () async {
+                      dev.log(numberLength.toString());
                       if (numberLength == 10) {
                         setState(() {
-                          // isloading = true;
+                          isLoading = true;
                         });
                         if (isLoading == true) {
                           // if (loginFormKey.currentState!.validate()) {
-                          // log("+91${contactController.text}", name: "Contact no. >");
+                          dev.log("+91${phoneNumberController.text}", name: "Contact no. >");
                           await FirebaseAuth.instance.verifyPhoneNumber(
                             phoneNumber: "+91${phoneNumberController.text}",
                             verificationCompleted: (PhoneAuthCredential credential) {},
@@ -76,6 +82,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 // isotpready = true;
                                 isLoading = false;
                               });
+                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => OtpScreen(verificationId: verificationId, phoneNumber: phoneNumberController.text.toString(),)));
                             },
                             codeAutoRetrievalTimeout: (String verificationId) {},
                           );
