@@ -19,16 +19,21 @@ class _SplashScreenState extends State<SplashScreen> {
   String? token;
   final _auth = FirebaseAuth.instance;
 
-
   @override
   void initState() {
-    checkLogin();
+    // checkLogin();
+    login();
     // _navigationToLoginScreen();
     super.initState();
   }
 
+  login() async {
+    await checkLogin();
+  }
+
   Future<void> checkLogin() async {
-    // await checkConnectivity();
+    WidgetsBinding.instance.addPostFrameCallback((_){
+
     User? user = _auth.currentUser;
     if (user == null) {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
@@ -38,6 +43,9 @@ class _SplashScreenState extends State<SplashScreen> {
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
       }
     }
+
+    });
+    // await checkConnectivity();
   }
 
   _navigationToLoginScreen() async {
@@ -57,7 +65,7 @@ class _SplashScreenState extends State<SplashScreen> {
       backgroundColor: Colors.white,
       body: SizedBox(
         width: MediaQuery.of(context).size.width,
-        child: Column(
+        child: const Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [

@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'dart:developer' as dev;
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -8,6 +10,10 @@ import 'package:master_circolife_app/presentation/home/screens/devices_screen.da
 import 'package:master_circolife_app/presentation/home/screens/pricing_screen.dart';
 import 'package:master_circolife_app/utils/constants.dart';
 import 'package:master_circolife_app/utils/secrets.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../../../main.dart';
+import '../../../models/user_details_model.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,12 +26,71 @@ class _HomeScreenState extends State<HomeScreen> {
   bool searching = false;
   bool validNumber = false;
   TextEditingController phoneController = TextEditingController();
+  SharedPreferences? preferences;
+  UserDetails? userdata;
+  final _auth = FirebaseAuth.instance;
+  User? user;
+
+  Future<void> _checklogin() async {
+    preferences = await SharedPreferences.getInstance();
+    user = _auth.currentUser;
+    if (user == null) {
+    } else {
+      await getuserdata(user!.phoneNumber.toString());
+    }
+  }
+
+  Future<void> getuserdata(String contact) async {
+    setState(() {
+      // isloading = true;
+    });
+    dev.log(">>>$contact");
+    var headers = await _getHeaderConfig();
+    var url = Uri.http(AppSecrets.baseUrl, '/api/user/${contact.replaceFirst("+91", "")}');
+    var response = await http.get(
+      url,
+      headers: headers,
+    );
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      setState(() {
+        userdata = UserDetails.fromJson(json.decode(response.body));
+        // isloading = false;
+      });
+      // dev.log(orders[0].oId ?? "NULL", name: "ORDER ID>>");
+    } else {
+      // logout();
+    }
+  }
+
+  Future<Map<String, String>> _getHeaderConfig() async {
+    String? token = await appStorage?.retrieveEncryptedData('token');
+    Map<String, String> headers = {};
+    headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+    if (token != null) {
+      headers.putIfAbsent("Authorization", () => token);
+    }
+    return headers;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    login();
+  }
+
+  login() async {
+    await _checklogin();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: const Text("Master Circolife App"),
+        title: Text("Hello ${userdata?.fullname.toString()}"),
         centerTitle: true,
       ),
       body: Padding(
@@ -134,7 +199,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ],
                               ),
                             ),
-                            if(userId != "")...[
+                            if (userId != "") ...[
                               ListTile(
                                 title: const Text("View Devices"),
                                 trailing: const Icon(Icons.arrow_forward_rounded),
@@ -150,18 +215,24 @@ class _HomeScreenState extends State<HomeScreen> {
                                       context,
                                       MaterialPageRoute(
                                           builder: (context) => PricingScreen(
-                                            userId: data['userid'],
-                                          )));
+                                                userId: data['userid'],
+                                              )));
                                 },
                               ),
-                             if(customerId != "")
-                               ListTile(
-                                 title: const Text("Invoices"),
-                                 trailing: const Icon(Icons.arrow_forward_rounded),
-                                 onTap: () {
-                                   Navigator.push(context, MaterialPageRoute(builder: (context) => InvoicesScreen(customerId: customerId, userId: userId,)));
-                                 },
-                               ),
+                              if (customerId != "")
+                                ListTile(
+                                  title: const Text("Invoices"),
+                                  trailing: const Icon(Icons.arrow_forward_rounded),
+                                  onTap: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) => InvoicesScreen(
+                                                  customerId: customerId,
+                                                  userId: userId,
+                                                )));
+                                  },
+                                ),
                             ],
                           ],
                         );
