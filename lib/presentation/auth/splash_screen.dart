@@ -32,18 +32,16 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> checkLogin() async {
-    WidgetsBinding.instance.addPostFrameCallback((_){
-
-    User? user = _auth.currentUser;
-    if (user == null) {
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
-    } else {
-      // log(_isConnected.toString(), name: "INTERNET 3 >>>>");
-      if (mounted) {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      User? user = _auth.currentUser;
+      if (user == null) {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
+      } else {
+        // log(_isConnected.toString(), name: "INTERNET 3 >>>>");
+        if (mounted) {
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
+        }
       }
-    }
-
     });
     // await checkConnectivity();
   }
@@ -65,15 +63,14 @@ class _SplashScreenState extends State<SplashScreen> {
       backgroundColor: Colors.white,
       body: SizedBox(
         width: MediaQuery.of(context).size.width,
-        child: const Column(
+        child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Text("SPLASH")
-            // Image.asset(
-            //   "assets/images/logo/new_revamp_logo.png",
-            //   width: 256.09175,
-            // )
+            Image.asset(
+              "assets/images/logo/new_revamp_logo.png",
+              width: 256.09175,
+            )
           ],
         ),
       ),

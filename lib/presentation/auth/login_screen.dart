@@ -41,7 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Enter your phone number"),
+                  Text("Enter your phone number", style: TextStyle(fontSize: 24, color: Colors.grey.shade900, fontWeight: FontWeight.bold)),
                   const SizedBox(
                     height: 15,
                   ),

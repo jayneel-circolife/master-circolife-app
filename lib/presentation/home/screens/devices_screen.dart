@@ -4,10 +4,12 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:http/http.dart' as http;
+import 'package:master_circolife_app/models/user_details_model.dart';
 import 'package:master_circolife_app/presentation/home/screens/configure_device_screen.dart';
 import 'package:master_circolife_app/utils/constants.dart';
 import 'package:slide_to_act/slide_to_act.dart';
 
+import '../../../main.dart';
 import '../../../models/online_device_details.dart';
 import '../../../utils/secrets.dart';
 
@@ -371,6 +373,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
 
   Future<void> subscriptionOff(List<String> devices, BuildContext context, String command) async {
     final url = Uri.https(AppSecrets.baseUrl, "api/customers/b2blogin/sendcommand");
+    var headers = await _getHeaderConfig();
     var response = await http.post(url, headers: headers, body: jsonEncode({"devices": devices, "command": command}));
     if (response.statusCode == 201 || response.statusCode == 200) {
       if (command == "!suboffoff") {
@@ -395,13 +398,11 @@ class _DevicesScreenState extends State<DevicesScreen> {
   }
 
   Future<void> getDevices() async {
-    var url = Uri.parse('http://${AppSecrets.baseUrl}/api/devices/${widget.userId}');
+    var url = Uri.parse('https://${AppSecrets.baseUrl}/api/devices/${widget.userId}');
+    var headers = await _getHeaderConfig();
     var response = await http.get(
       url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
+      headers: headers,
     );
     if (response.statusCode == 200 || response.statusCode == 201) {
       setState(() {
@@ -413,13 +414,11 @@ class _DevicesScreenState extends State<DevicesScreen> {
   }
 
   Future<void> getSharedDevices() async {
-    var url = Uri.parse('http://${AppSecrets.baseUrl}/api/devices/shared/${widget.userId}');
+    var url = Uri.parse('https://${AppSecrets.baseUrl}/api/devices/shared/${widget.userId}');
+    var headers = await _getHeaderConfig();
     var response = await http.get(
       url,
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
+      headers: headers,
     );
     if (response.statusCode == 200 || response.statusCode == 201) {
       setState(() {
@@ -428,6 +427,21 @@ class _DevicesScreenState extends State<DevicesScreen> {
     } else {
       Fluttertoast.showToast(msg: "Something went wrong");
     }
+  }
+
+  Future<Map<String, String>> _getHeaderConfig() async {
+    String? token = await appStorage?.retrieveEncryptedData('token');
+    Map<String, String> headers = {};
+    headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+    log(token.toString(), name: "Token>>>>>>");
+    if (token != null) {
+      headers.putIfAbsent("Authorization", () => token);
+    }
+    log(headers.toString(), name: "IS EXISTING HEADERS");
+    return headers;
   }
 
   void getAllDevices() async {

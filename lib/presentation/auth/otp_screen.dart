@@ -42,7 +42,7 @@ class _OtpScreenState extends State<OtpScreen> {
   Future isExisting() async {
     dev.log("STARTED >>>>>>>>>", name: "is existing");
     var headers = await _getHeaderConfig();
-    var url = Uri.http(AppSecrets.baseUrl, '/api/user/${widget.phoneNumber.toString()}');
+    var url = Uri.https(AppSecrets.baseUrl, '/api/user/${widget.phoneNumber.toString()}');
     dev.log(url.toString(), name: "is existing");
     var response = await http.get(
       url,
@@ -69,12 +69,12 @@ class _OtpScreenState extends State<OtpScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text("Enter your phone number"),
+                  Text("Enter OTP", style: TextStyle(fontSize: 24, color: Colors.grey.shade900, fontWeight: FontWeight.bold)),
                   const SizedBox(
                     height: 15,
                   ),
                   Text(
-                    "OTP will be sent to this number",
+                    "Enter the OTP sent on +91 ${widget.phoneNumber}",
                     style: TextStyle(fontSize: 14, color: Colors.grey.shade700, fontWeight: FontWeight.normal),
                   ),
                   const SizedBox(
@@ -94,11 +94,11 @@ class _OtpScreenState extends State<OtpScreen> {
                         });
                         await auth.signInWithCredential(credential);
                         dev.log("verifying", name: "OTP");
-                        // await generateToken(contactController.text.toString());
+                        await generateToken(widget.phoneNumber.toString());
                         bool isavl = await isExisting();
                         dev.log(isavl.toString(), name: "IS EXISTING VALUE");
                         if (!isavl || registerResponse?.userid == null) {
-                          Fluttertoast.showToast(msg: "NO USER");
+                          Fluttertoast.showToast(msg: "This number is not registered with CircoLife");
                         } else {
                           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
                         }
@@ -109,10 +109,10 @@ class _OtpScreenState extends State<OtpScreen> {
                         }
                       }
                     },
-                    style: (otpLength == 10) ? filledButtonStyle() : hollowButtonStyle(),
-                    child: const Text(
+                    style: (otpLength == 6) ? filledButtonStyle() : hollowButtonStyle(),
+                    child: Text(
                       "Login",
-                      style: TextStyle(color: Color(0xff667085)),
+                      style: TextStyle(color: (otpLength == 6) ? Colors.white : const Color(0xff667085)),
                     ),
                   ))
             ],
@@ -135,5 +135,22 @@ class _OtpScreenState extends State<OtpScreen> {
     }
     dev.log(headers.toString(), name: "IS EXISTING HEADERS");
     return headers;
+  }
+
+  Future<void> generateToken(String mobilenumber) async {
+    var url = Uri.https(AppSecrets.baseUrl, '/api/user/authorization/jwt');
+    var response = await http.post(url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({"mobile": mobilenumber}));
+    if (response.statusCode == 201 || response.statusCode == 200) {
+      String jwtToken = jsonDecode(response.body.toString())["token"];
+      dev.log(jwtToken.toString(), name: "JWT TOKEN>");
+      await appStorage?.saveEncryptedData("token", jwtToken);
+    } else {
+      Fluttertoast.showToast(msg: "Something went wrong ${response.statusCode.toString()}");
+    }
   }
 }

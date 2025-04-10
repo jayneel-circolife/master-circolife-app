@@ -46,7 +46,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     dev.log(">>>$contact");
     var headers = await _getHeaderConfig();
-    var url = Uri.http(AppSecrets.baseUrl, '/api/user/${contact.replaceFirst("+91", "")}');
+    var url = Uri.https(AppSecrets.baseUrl, '/api/user/${contact.replaceFirst("+91", "")}');
     var response = await http.get(
       url,
       headers: headers,
@@ -75,6 +75,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return headers;
   }
 
+  Future getUserDataByPhoneNumber() async {
+    return http.get(Uri.https(AppSecrets.baseUrl, '/api/user/${phoneController.text}',), headers: await _getHeaderConfig());
+  }
+
   @override
   void initState() {
     super.initState();
@@ -90,8 +94,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text("Hello ${userdata?.fullname.toString()}"),
-        centerTitle: true,
+        title: Text("Welcome ${userdata?.fullname.toString() ?? ""}"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),
@@ -133,12 +136,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             if (validNumber)
               FutureBuilder(
-                  future: http.get(
-                      Uri.https(
-                        AppSecrets.baseUrl,
-                        '/api/user/${phoneController.text}',
-                      ),
-                      headers: headers),
+                  future: getUserDataByPhoneNumber(),
                   builder: (context, snapshot) {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const CircularProgressIndicator();
@@ -204,7 +202,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 title: const Text("View Devices"),
                                 trailing: const Icon(Icons.arrow_forward_rounded),
                                 onTap: () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => DevicesScreen(userId: userId, fullName: fullName)));
+                                  Navigator.push(context, MaterialPageRoute(builder: (context) => DevicesScreen(userId: userId, fullName: fullName, )));
                                 },
                               ),
                               ListTile(

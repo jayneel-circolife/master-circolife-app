@@ -9,6 +9,7 @@ import 'package:slide_to_act/slide_to_act.dart';
 import 'dart:convert';
 import 'package:fluttertoast/fluttertoast.dart';
 
+import '../../../main.dart';
 import '../../../utils/secrets.dart';
 
 class ConfigureDeviceScreen extends StatefulWidget {
@@ -320,6 +321,7 @@ class _ConfigureDeviceScreenState extends State<ConfigureDeviceScreen> {
 
   Future<void> subscriptionOff(String deviceId, BuildContext context, String command) async {
     final url = Uri.https(AppSecrets.baseUrl, "api/customers/b2blogin/sendcommand");
+    var headers = await _getHeaderConfig();
     var response = await http.post(url,
         headers: headers,
         body: jsonEncode({
@@ -351,5 +353,20 @@ class _ConfigureDeviceScreenState extends State<ConfigureDeviceScreen> {
         Fluttertoast.showToast(msg: "Issue Code > ${rebootResponse.statusCode}");
       }
     }
+  }
+
+  Future<Map<String, String>> _getHeaderConfig() async {
+    String? token = await appStorage?.retrieveEncryptedData('token');
+    Map<String, String> headers = {};
+    headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+    log(token.toString(), name: "Token>>>>>>");
+    if (token != null) {
+      headers.putIfAbsent("Authorization", () => token);
+    }
+    log(headers.toString(), name: "IS EXISTING HEADERS");
+    return headers;
   }
 }
