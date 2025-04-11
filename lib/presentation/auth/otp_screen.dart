@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:lottie/lottie.dart';
 import 'package:master_circolife_app/models/register_model.dart';
 import 'package:master_circolife_app/presentation/home/screens/home_screen.dart';
 import 'package:master_circolife_app/widgets/otp_text_field.dart';
@@ -103,10 +104,7 @@ class _OtpScreenState extends State<OtpScreen> {
                           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
                         }
                       } catch (e) {
-                        dev.log(e.toString(), name: "Firebase Error >");
-                        if (e.toString().contains("firebase_auth/session-expired")) {
-                          Fluttertoast.showToast(msg: e.toString().replaceFirst("[firebase_auth/session-expired]", "to"));
-                        }
+                        Fluttertoast.showToast(msg: e.toString());
                       }
                     },
                     style: (otpLength == 6) ? filledButtonStyle() : hollowButtonStyle(),
@@ -114,7 +112,16 @@ class _OtpScreenState extends State<OtpScreen> {
                       "Login",
                       style: TextStyle(color: (otpLength == 6) ? Colors.white : const Color(0xff667085)),
                     ),
-                  ))
+                  )),
+              if (isLoading)
+                Container(
+                  width: double.maxFinite,
+                  height: double.maxFinite,
+                  color: const Color(0xffF9FAFB).withOpacity(0.25),
+                  child: Center(
+                    child: Container(child: Lottie.asset("assets/anim/circolife_loader.json", width: 200, height: 200)),
+                  ),
+                )
             ],
           ),
         ),

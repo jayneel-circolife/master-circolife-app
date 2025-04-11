@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'dart:developer' as dev;
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:lottie/lottie.dart';
 import 'package:master_circolife_app/presentation/auth/otp_screen.dart';
 
 import '../../widgets/button_styles.dart';
@@ -95,7 +96,16 @@ class _LoginScreenState extends State<LoginScreen> {
                       "Login",
                       style: TextStyle(color: (numberLength == 10) ? Colors.white : const Color(0xff667085)),
                     ),
-                  ))
+                  )),
+              if (isLoading)
+                Container(
+                  width: double.maxFinite,
+                  height: double.maxFinite,
+                  color: const Color(0xffF9FAFB).withOpacity(0.25),
+                  child: Center(
+                    child: Container(child: Lottie.asset("assets/anim/circolife_loader.json", width: 200, height: 200)),
+                  ),
+                )
             ],
           ),
         ),

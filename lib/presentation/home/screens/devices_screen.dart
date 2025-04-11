@@ -7,11 +7,15 @@ import 'package:http/http.dart' as http;
 import 'package:master_circolife_app/models/user_details_model.dart';
 import 'package:master_circolife_app/presentation/home/screens/configure_device_screen.dart';
 import 'package:master_circolife_app/utils/constants.dart';
+import 'package:mqtt_client/mqtt_client.dart';
+import 'package:mqtt_client/mqtt_server_client.dart';
 import 'package:slide_to_act/slide_to_act.dart';
 
 import '../../../main.dart';
 import '../../../models/online_device_details.dart';
 import '../../../utils/secrets.dart';
+
+late MqttServerClient mqttClient;
 
 class DevicesScreen extends StatefulWidget {
   const DevicesScreen({super.key, required this.userId, required this.fullName});
@@ -305,6 +309,19 @@ class _DevicesScreenState extends State<DevicesScreen> {
                     // Devices ownedDevice = Devices(deviceId: device.deviceid.toString(), deviceType: device.deviceType.toString(), deviceName: device.deviceName.toString(), deviceTemp: 24, deviceStatus: true, deviceMode: "deviceMode", isadmin: true, fanspeed: 1, did: "", sensordata: "", isconnected: true, econsumption: 0.0);
                     // devicesBox?.add(ownedDevice);
                     return ListTile(
+                      leading: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // device.isOnline
+                          //     ? const Icon(Icons.circle, color: Colors.green, size: 12)
+                          //     : const Icon(Icons.circle, color: Colors.grey, size: 12),
+                          // const SizedBox(width: 8),
+                          Icon(
+                            Icons.wifi,
+                            color: device.isOnline ? Colors.green : Colors.blueGrey,
+                          ), // or whatever
+                        ],
+                      ),
                       title: Text(device.deviceName.toString()),
                       subtitle: Text(device.deviceid.toString()),
                       trailing: const Icon(Icons.arrow_forward_rounded),
@@ -337,11 +354,34 @@ class _DevicesScreenState extends State<DevicesScreen> {
                     // Devices sharedDevice = Devices(deviceId: device.deviceid.toString(), deviceType: device.deviceType.toString(), deviceName: device.deviceName.toString(), deviceTemp: 24, deviceStatus: true, deviceMode: "deviceMode", isadmin: true, fanspeed: 1, did: "", sensordata: "", isconnected: true, econsumption: 0.0);
                     // devicesBox?.add(sharedDevice);
                     return ListTile(
-                      leading: const Icon(
-                        Icons.group,
-                        color: Colors.blue,
+                      leading: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.wifi,
+                            color: device.isOnline ? Colors.green : Colors.blueGrey,
+                          ),
+                        ],
                       ),
-                      title: Text(device.deviceName.toString()),
+                      title: Row(
+                        children: [
+                          Text(
+                            device.deviceName.toString(),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(
+                            width: 15,
+                          ),
+                          Container(
+                            padding: EdgeInsets.symmetric(vertical: 5, horizontal: 7),
+                            decoration: BoxDecoration(borderRadius: BorderRadius.circular(6), color: Color(0xFFE2EEF3)),
+                            child: const Text(
+                              "Shared",
+                              style: TextStyle(fontWeight: FontWeight.w500, fontSize: 14, color: Color(0xff108EBE)),
+                            ),
+                          ),
+                        ],
+                      ),
                       subtitle: Text(device.deviceid.toString()),
                       trailing: const Icon(Icons.arrow_forward_rounded),
                       onTap: () {
@@ -447,5 +487,67 @@ class _DevicesScreenState extends State<DevicesScreen> {
   void getAllDevices() async {
     await getDevices();
     await getSharedDevices();
+    await setupMqttClient();
+  }
+
+  Future<void> setupMqttClient() async {
+    mqttClient = MqttServerClient.withPort('mqtt.circolives.in', 'flutter_client_${DateTime.now().millisecondsSinceEpoch}', 2266);
+    mqttClient.logging(on: false);
+    mqttClient.keepAlivePeriod = 20;
+    mqttClient.onDisconnected = () => log("MQTT disconnected");
+
+    mqttClient.onConnected = () async {
+      log("MQTT connected");
+      await pingAllDevices(); // Ping once connected
+    };
+
+    mqttClient.onSubscribed = (String topic) {
+      log("Subscribed to $topic");
+    };
+
+    final connMessage = MqttConnectMessage()
+        .withClientIdentifier('flutter_client')
+        .authenticateAs("circolifeNodes", "CircoLifeProd@6622")
+        .keepAliveFor(20)
+        .startClean()
+        .withWillQos(MqttQos.atLeastOnce);
+    mqttClient.connectionMessage = connMessage;
+
+    try {
+      await mqttClient.connect();
+    } catch (e) {
+      log("MQTT Connection failed: $e");
+      mqttClient.disconnect();
+    }
+  }
+
+  Future<void> pingAllDevices() async {
+    List<OnlineDeviceDetails> allDevices = [...ownedDevices, ...sharedDevices];
+
+    for (var device in allDevices) {
+      String cmdInTopic = "${device.deviceid}/cmdin";
+      String cmdOutTopic = "${device.deviceid}/cmdout";
+
+      mqttClient.subscribe(cmdOutTopic, MqttQos.atLeastOnce);
+
+      // Listen for response
+      mqttClient.updates!.listen((List<MqttReceivedMessage<MqttMessage?>>? c) {
+        final recMess = c![0].payload as MqttPublishMessage;
+        final payload = MqttPublishPayload.bytesToStringAsString(recMess.payload.message);
+        final topic = c[0].topic;
+
+        if (payload == "Hello Master") {
+          String deviceId = topic.split("/")[0];
+          setState(() {
+            ownedDevices.firstWhere((d) => d.deviceid == deviceId, orElse: () => sharedDevices.firstWhere((d) => d.deviceid == deviceId)).isOnline = true;
+          });
+        }
+      });
+
+      // Send ping
+      final builder = MqttClientPayloadBuilder();
+      builder.addString("Hello ESP");
+      mqttClient.publishMessage(cmdInTopic, MqttQos.atLeastOnce, builder.payload!);
+    }
   }
 }

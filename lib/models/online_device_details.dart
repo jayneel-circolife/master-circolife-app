@@ -13,6 +13,7 @@ class OnlineDeviceDetails {
   String? receiversImage;
   String? sendersImage;
   bool? isSelfCleanOn;
+  bool isOnline = false;
 
   OnlineDeviceDetails(
       {this.did,
@@ -29,6 +30,7 @@ class OnlineDeviceDetails {
         this.receiversImage,
         this.sendersImage,
         this.isSelfCleanOn,
+        this.isOnline = false,
         required OnlineDeviceDetails addressDetails});
 
   OnlineDeviceDetails.fromJson(Map<String, dynamic> json) {

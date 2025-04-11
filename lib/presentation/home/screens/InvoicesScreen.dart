@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
+import '../../../main.dart';
 import '../../../utils/constants.dart';
 import '../../../utils/secrets.dart';
 
@@ -10,6 +11,28 @@ class InvoicesScreen extends StatelessWidget {
   const InvoicesScreen({super.key, required this.customerId, required this.userId});
   final String customerId;
   final String userId;
+
+  Future getInvoicesByCustomer() async {
+    return http.get(
+        Uri.https(
+          AppSecrets.baseUrl,
+          '/api/invoice/$customerId/inv',
+        ),
+        headers: await _getHeaderConfig());
+  }
+
+  Future<Map<String, String>> _getHeaderConfig() async {
+    String? token = await appStorage?.retrieveEncryptedData('token');
+    Map<String, String> headers = {};
+    headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+    if (token != null) {
+      headers.putIfAbsent("Authorization", () => token);
+    }
+    return headers;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,12 +44,7 @@ class InvoicesScreen extends StatelessWidget {
       body: Column(
         children: [
           FutureBuilder(
-              future: http.get(
-                  Uri.https(
-                    AppSecrets.baseUrl,
-                    '/api/invoice/$customerId/inv',
-                  ),
-                  headers: headers),
+              future: getInvoicesByCustomer(),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const CircularProgressIndicator();
@@ -57,12 +75,6 @@ class InvoicesScreen extends StatelessWidget {
                 }
               })
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-
-        },
-        child: const Icon(Icons.add),
       ),
     );
   }

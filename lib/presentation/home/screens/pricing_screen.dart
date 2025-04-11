@@ -7,9 +7,33 @@ import 'package:master_circolife_app/utils/constants.dart';
 import 'dart:convert';
 import 'package:master_circolife_app/utils/secrets.dart';
 
+import '../../../main.dart';
+
 class PricingScreen extends StatelessWidget {
   const PricingScreen({super.key, required this.userId});
   final String userId;
+
+
+  Future getUserDevicesByPhoneNumber() async {
+    return http.get(Uri.https(AppSecrets.baseUrl, '/api/devices/${userId}',), headers: await _getHeaderConfig());
+  }
+
+  Future getUserSharedDevicesByPhoneNumber() async {
+    return http.get(Uri.https(AppSecrets.baseUrl, '/api/devices/${userId}',), headers: await _getHeaderConfig());
+  }
+
+  Future<Map<String, String>> _getHeaderConfig() async {
+    String? token = await appStorage?.retrieveEncryptedData('token');
+    Map<String, String> headers = {};
+    headers = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    };
+    if (token != null) {
+      headers.putIfAbsent("Authorization", () => token);
+    }
+    return headers;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +47,7 @@ class PricingScreen extends StatelessWidget {
             child: Column(
           children: [
             FutureBuilder(
-                future: http.get(Uri.https(AppSecrets.baseUrl, '/api/devices/$userId'), headers: headers),
+                future: getUserDevicesByPhoneNumber(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -53,7 +77,7 @@ class PricingScreen extends StatelessWidget {
                   return Container();
                 }),
             FutureBuilder(
-                future: http.get(Uri.https(AppSecrets.baseUrl, '/api/devices/shared/$userId'), headers: headers),
+                future: getUserSharedDevicesByPhoneNumber(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
