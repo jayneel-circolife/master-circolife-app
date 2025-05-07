@@ -22,7 +22,7 @@ final EncryptedSharedPrefManager? appStorage = EncryptedSharedPrefManager.getIns
 
 Future<void> baseApp() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   runApp(const MyApp());
 }
 

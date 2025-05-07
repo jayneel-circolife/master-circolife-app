@@ -64,7 +64,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
                           context: context,
                           builder: (context) {
                             bool startTimeSet = false;
-                            TimeOfDay startTime = const TimeOfDay(hour: 8, minute: 0);
+                            TimeOfDay startTime = const TimeOfDay(hour: 13, minute: 0);
                             return StatefulBuilder(builder: (context, bottomState) {
                               return Container(
                                 width: double.maxFinite,
@@ -179,6 +179,9 @@ class _DevicesScreenState extends State<DevicesScreen> {
               icon: const Icon(Icons.more_vert_rounded)),
         ],
       ),
+      floatingActionButton: FloatingActionButton(onPressed: () async {
+        
+      }, child: Icon(Icons.add),),
       body: Padding(
         padding: const EdgeInsets.fromLTRB(16, 5, 16, 16),
         child: SingleChildScrollView(
@@ -412,7 +415,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
   }
 
   Future<void> subscriptionOff(List<String> devices, BuildContext context, String command) async {
-    final url = Uri.https(AppSecrets.baseUrl, "api/customers/b2blogin/sendcommand");
+    final url = Uri.https(AppSecrets.baseUrl, "api/customers/masterapp/sendcommand");
     var headers = await _getHeaderConfig();
     var response = await http.post(url, headers: headers, body: jsonEncode({"devices": devices, "command": command}));
     if (response.statusCode == 201 || response.statusCode == 200) {

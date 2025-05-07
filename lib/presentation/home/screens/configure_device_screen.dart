@@ -116,7 +116,7 @@ class _ConfigureDeviceScreenState extends State<ConfigureDeviceScreen> {
                     context: context,
                     builder: (context) {
                       bool startTimeSet = false;
-                      TimeOfDay startTime = const TimeOfDay(hour: 8, minute: 0);
+                      TimeOfDay startTime = const TimeOfDay(hour: 13, minute: 0);
                       return StatefulBuilder(builder: (context, bottomState) {
                         return Container(
                           width: double.maxFinite,
@@ -253,7 +253,7 @@ class _ConfigureDeviceScreenState extends State<ConfigureDeviceScreen> {
             // ),
             const Text("Latest State"),
             FutureBuilder(
-                future: http.get(Uri.https("production.circolife.vip", '/api/analItics/checdeviceStatus/getdeviceActive/${widget.deviceId}'), headers: headers),
+                future: http.get(Uri.https(AppSecrets.baseUrl, '/api/analItics/checdeviceStatus/getdeviceActive/${widget.deviceId}'), headers: headers),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
@@ -320,7 +320,7 @@ class _ConfigureDeviceScreenState extends State<ConfigureDeviceScreen> {
   }
 
   Future<void> subscriptionOff(String deviceId, BuildContext context, String command) async {
-    final url = Uri.https(AppSecrets.baseUrl, "api/customers/b2blogin/sendcommand");
+    final url = Uri.https(AppSecrets.baseUrl, "api/customers/masterapp/sendcommand");
     var headers = await _getHeaderConfig();
     var response = await http.post(url,
         headers: headers,

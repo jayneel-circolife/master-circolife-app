@@ -93,9 +93,9 @@ class _OtpScreenState extends State<OtpScreen> {
                         setState(() {
                           isLoading = true;
                         });
-                        await auth.signInWithCredential(credential);
+                        UserCredential userCred = await auth.signInWithCredential(credential);
                         dev.log("verifying", name: "OTP");
-                        await generateToken(widget.phoneNumber.toString());
+                        await generateToken(widget.phoneNumber.toString(), userCred.user!.uid.toString());
                         bool isavl = await isExisting();
                         dev.log(isavl.toString(), name: "IS EXISTING VALUE");
                         if (!isavl || registerResponse?.userid == null) {
@@ -104,6 +104,7 @@ class _OtpScreenState extends State<OtpScreen> {
                           Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
                         }
                       } catch (e) {
+                        dev.log(e.toString());
                         Fluttertoast.showToast(msg: e.toString());
                       }
                     },
@@ -144,14 +145,14 @@ class _OtpScreenState extends State<OtpScreen> {
     return headers;
   }
 
-  Future<void> generateToken(String mobilenumber) async {
+  Future<void> generateToken(String mobilenumber, String userId) async {
     var url = Uri.https(AppSecrets.baseUrl, '/api/user/authorization/jwt');
     var response = await http.post(url,
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: jsonEncode({"mobile": mobilenumber}));
+        body: jsonEncode({"mobile": mobilenumber, "userid": userId}));
     if (response.statusCode == 201 || response.statusCode == 200) {
       String jwtToken = jsonDecode(response.body.toString())["token"];
       dev.log(jwtToken.toString(), name: "JWT TOKEN>");
