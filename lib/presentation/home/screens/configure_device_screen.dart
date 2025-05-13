@@ -116,7 +116,7 @@ class _ConfigureDeviceScreenState extends State<ConfigureDeviceScreen> {
                     context: context,
                     builder: (context) {
                       bool startTimeSet = false;
-                      TimeOfDay startTime = const TimeOfDay(hour: 13, minute: 0);
+                      TimeOfDay startTime = const TimeOfDay(hour: 11, minute: 0);
                       return StatefulBuilder(builder: (context, bottomState) {
                         return Container(
                           width: double.maxFinite,
