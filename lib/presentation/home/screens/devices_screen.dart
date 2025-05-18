@@ -245,7 +245,8 @@ class _DevicesScreenState extends State<DevicesScreen> {
                   });
                 });
           },
-          child: Icon(Icons.add),
+          backgroundColor: Colors.purple.shade50,
+          child: Icon(Icons.add, color: Color(0xFFA14996),),
         ),
         body: Padding(
           padding: const EdgeInsets.fromLTRB(16, 5, 16, 16),

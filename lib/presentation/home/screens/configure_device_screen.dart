@@ -70,7 +70,8 @@ class _ConfigureDeviceScreenState extends State<ConfigureDeviceScreen> {
                                 IconButton(
                                   onPressed: () async {
                                     if (phoneController.text.length == 10) {
-                                      var response = await http.get(Uri.https(AppSecrets.baseUrl, "/api/user/${phoneController.text}"));
+                                      var headers = await _getHeaderConfig();
+                                      var response = await http.get(Uri.https(AppSecrets.baseUrl, "/api/user/${phoneController.text}"), headers: headers);
                                       if (response.statusCode == 200 || response.statusCode == 201) {
                                         Map<String, dynamic> data = jsonDecode(response.body.toString());
                                         log(data["userid"], name: "UserDATA");
@@ -91,6 +92,7 @@ class _ConfigureDeviceScreenState extends State<ConfigureDeviceScreen> {
                                             await http.post(Uri.https(AppSecrets.baseUrl, "/api/devices/"), body: jsonEncode(deviceData), headers: headers);
                                         if (deviceResponse.statusCode == 200 || deviceResponse.statusCode == 201) {
                                           Fluttertoast.showToast(msg: "Device Added Successfully");
+                                          Navigator.pop(context);
                                         } else {
                                           log(deviceResponse.body.toString(), name: "Payload");
                                         }
