@@ -1,0 +1,93 @@
+{
+  "project_info": {
+    "project_number": "644688474391",
+    "firebase_url": "https://circolifeapp-default-rtdb.firebaseio.com",
+    "project_id": "circolifeapp",
+    "storage_bucket": "circolifeapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:644688474391:android:e69bf2ca53c7b14e384752",
+        "android_client_info": {
+          "package_name": "com.circolife.circolife"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "644688474391-hmmo7ms1ksg36n35a0q7cji07i88sk9l.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.circolife.circolife",
+            "certificate_hash": "fcd8d73d99d08d8b2ced983837cd5aa91e08b778"
+          }
+        },
+        {
+          "client_id": "644688474391-5ljsmm7ph4ga9tl4t4tuflo54edd755v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC02q9HRdf5GfLly6dlN-IqhZu2x8IFqcE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "644688474391-5ljsmm7ph4ga9tl4t4tuflo54edd755v.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "644688474391-do01k4o3qetnfj6uhh4c6seoubp1noo0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.circolife.circolife",
+                "app_store_id": "6479170382"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:644688474391:android:33a5df10affd43ac384752",
+        "android_client_info": {
+          "package_name": "com.example.master_circolife_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "644688474391-5ljsmm7ph4ga9tl4t4tuflo54edd755v.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC02q9HRdf5GfLly6dlN-IqhZu2x8IFqcE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "644688474391-5ljsmm7ph4ga9tl4t4tuflo54edd755v.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "644688474391-do01k4o3qetnfj6uhh4c6seoubp1noo0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.circolife.circolife",
+                "app_store_id": "6479170382"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

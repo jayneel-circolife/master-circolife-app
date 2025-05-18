@@ -251,6 +251,7 @@ class _ConfigureDeviceScreenState extends State<ConfigureDeviceScreen> {
             //     )
             //   ],
             // ),
+            Text("Firmware Version ${widget.device.firmwareVersion ?? "N/A"}"),
             const Text("Latest State"),
             FutureBuilder(
                 future: http.get(Uri.https(AppSecrets.baseUrl, '/api/analItics/checdeviceStatus/getdeviceActive/${widget.deviceId}'), headers: headers),

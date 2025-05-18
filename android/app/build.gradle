@@ -34,8 +34,8 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.example.master_circolife_app"
-    compileSdk = 34
-    ndkVersion = flutter.ndkVersion
+    compileSdk = 35
+    ndkVersion = "27.0.12077973"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -78,7 +78,7 @@ flutter {
 
 dependencies {
 //    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
+    implementation(platform("com.google.firebase:firebase-bom:33.13.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth")
 }

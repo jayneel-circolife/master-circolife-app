@@ -1,16 +1,11 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/adapters.dart';
 import 'package:master_circolife_app/firebase_options.dart';
 import 'package:master_circolife_app/presentation/auth/login_screen.dart';
 import 'package:master_circolife_app/presentation/auth/splash_screen.dart';
-import 'package:master_circolife_app/utils/mqtt_manager.dart';
+import 'package:master_circolife_app/provider/mqtt_manager.dart';
 import 'package:master_circolife_app/utils/stroage.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'dart:developer';
-import 'models/hiveModels/devices.dart';
-import 'presentation/home/screens/home_screen.dart';
 
 const String devicesBoxName = "master";
 
@@ -31,14 +26,25 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: "Master Circolife",
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        useMaterial3: true,
-        fontFamily: "Inter",
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => MqttManager())
+      ],
+      child: MaterialApp(
+        title: "Master Circolife",
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          useMaterial3: true,
+          fontFamily: "Inter",
+        ),
+        home: const SplashScreen(),
+        builder: (context, child) {
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
+            child: child!,
+          );
+        },
       ),
-      home: const SplashScreen(),
     );
   }
 }

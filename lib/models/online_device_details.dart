@@ -12,6 +12,7 @@ class OnlineDeviceDetails {
   String? receiversNumber;
   String? receiversImage;
   String? sendersImage;
+  String? firmwareVersion;
   bool? isSelfCleanOn;
   bool isOnline = false;
 
@@ -30,6 +31,7 @@ class OnlineDeviceDetails {
         this.receiversImage,
         this.sendersImage,
         this.isSelfCleanOn,
+        this.firmwareVersion,
         this.isOnline = false,
         required OnlineDeviceDetails addressDetails});
 
@@ -47,6 +49,7 @@ class OnlineDeviceDetails {
     receiversNumber = json['receiversNumber'];
     receiversImage = json['receiversImage'];
     sendersImage = json['sendersImage'];
+    firmwareVersion = json['firmwareVersion'];
     isSelfCleanOn = json['isSelfCleanOn'];
   }
 
@@ -65,6 +68,7 @@ class OnlineDeviceDetails {
     data['receiversNumber'] = receiversNumber;
     data['receiversImage'] = receiversImage;
     data['sendersImage'] = sendersImage;
+    data['firmwareVersion'] = firmwareVersion;
     data['isSelfCleanOn'] = isSelfCleanOn;
     return data;
   }

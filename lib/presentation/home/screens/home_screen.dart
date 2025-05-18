@@ -10,10 +10,16 @@ import 'package:master_circolife_app/presentation/home/screens/devices_screen.da
 import 'package:master_circolife_app/presentation/home/screens/pricing_screen.dart';
 import 'package:master_circolife_app/utils/constants.dart';
 import 'package:master_circolife_app/utils/secrets.dart';
+import 'package:mqtt_client/mqtt_client.dart';
+import 'package:mqtt_client/mqtt_server_client.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../main.dart';
 import '../../../models/user_details_model.dart';
+
+late MqttServerClient mqttClient;
+bool mqttListenerAttached = false;
+
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -73,6 +79,44 @@ class _HomeScreenState extends State<HomeScreen> {
       headers.putIfAbsent("Authorization", () => token);
     }
     return headers;
+  }
+
+  Future<void> setupMqttClient() async {
+    mqttClient = MqttServerClient.withPort('mqtt.circolives.in', 'flutter_client_${DateTime.now().millisecondsSinceEpoch}', 2266);
+    mqttClient.secure = false;
+    mqttClient.keepAlivePeriod = 90;
+    mqttClient.logging(on: false);
+
+    mqttClient.onDisconnected = () => dev.log("MQTT disconnected");
+    mqttClient.pongCallback = () => dev.log("MQTT pong received");
+
+    mqttClient.onConnected = () async {
+      dev.log("MQTT connected");
+
+
+      if (!mqttListenerAttached) {
+        mqttListenerAttached = true;
+      }
+    };
+
+    mqttClient.onSubscribed = (String topic) {
+      dev.log("Subscribed to $topic");
+    };
+
+    final connMessage = MqttConnectMessage()
+        .withClientIdentifier('flutter_client_${DateTime.now().millisecondsSinceEpoch}')
+        .authenticateAs("circolifeNodes", "CircoLifeProd@6622")
+        .startClean()
+        .withWillQos(MqttQos.atLeastOnce);
+
+    mqttClient.connectionMessage = connMessage;
+
+    try {
+      await mqttClient.connect();
+    } catch (e) {
+      dev.log("MQTT Connection failed: $e");
+      mqttClient.disconnect();
+    }
   }
 
   Future getUserDataByPhoneNumber() async {
