@@ -27,9 +27,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (context) => MqttManager())
-      ],
+      providers: [ChangeNotifierProvider(create: (context) => MqttManager())],
       child: MaterialApp(
         title: "Master Circolife",
         debugShowCheckedModeBanner: false,

@@ -24,6 +24,12 @@ class ConfigureDeviceScreen extends StatefulWidget {
 }
 
 class _ConfigureDeviceScreenState extends State<ConfigureDeviceScreen> {
+
+
+  Future getDeviceState() async {
+    return http.get(Uri.https(AppSecrets.baseUrl, '/api/analItics/checdeviceStatus/getdeviceActive/${widget.deviceId}',), headers: await _getHeaderConfig());
+  }
+
   @override
   Widget build(BuildContext context) {
     TextEditingController phoneController = TextEditingController();
@@ -256,7 +262,7 @@ class _ConfigureDeviceScreenState extends State<ConfigureDeviceScreen> {
             Text("Firmware Version ${widget.device.firmwareVersion ?? "N/A"}"),
             const Text("Latest State"),
             FutureBuilder(
-                future: http.get(Uri.https(AppSecrets.baseUrl, '/api/analItics/checdeviceStatus/getdeviceActive/${widget.deviceId}'), headers: headers),
+                future: getDeviceState(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(child: CircularProgressIndicator());
