@@ -36,10 +36,14 @@ class _HomeScreenState extends State<HomeScreen> {
   UserDetails? userdata;
   final _auth = FirebaseAuth.instance;
   User? user;
+  String? username;
 
-  Future<void> _checklogin() async {
+  Future<void> _checkLogin() async {
     preferences = await SharedPreferences.getInstance();
-    user = _auth.currentUser;
+    username = await appStorage?.retrieveEncryptedData("username");
+    setState(() {
+
+    });
     if (user == null) {
     } else {
       await getuserdata(user!.phoneNumber.toString());
@@ -81,43 +85,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return headers;
   }
 
-  Future<void> setupMqttClient() async {
-    mqttClient = MqttServerClient.withPort('mqtt.circolives.in', 'flutter_client_${DateTime.now().millisecondsSinceEpoch}', 2266);
-    mqttClient.secure = false;
-    mqttClient.keepAlivePeriod = 90;
-    mqttClient.logging(on: false);
-
-    mqttClient.onDisconnected = () => dev.log("MQTT disconnected");
-    mqttClient.pongCallback = () => dev.log("MQTT pong received");
-
-    mqttClient.onConnected = () async {
-      dev.log("MQTT connected");
-
-
-      if (!mqttListenerAttached) {
-        mqttListenerAttached = true;
-      }
-    };
-
-    mqttClient.onSubscribed = (String topic) {
-      dev.log("Subscribed to $topic");
-    };
-
-    final connMessage = MqttConnectMessage()
-        .withClientIdentifier('flutter_client_${DateTime.now().millisecondsSinceEpoch}')
-        .authenticateAs("circolifeNodes", "CircoLifeProd@6622")
-        .startClean()
-        .withWillQos(MqttQos.atLeastOnce);
-
-    mqttClient.connectionMessage = connMessage;
-
-    try {
-      await mqttClient.connect();
-    } catch (e) {
-      dev.log("MQTT Connection failed: $e");
-      mqttClient.disconnect();
-    }
-  }
 
   Future getUserDataByPhoneNumber() async {
     return http.get(Uri.https(AppSecrets.baseUrl, '/api/user/${phoneController.text}',), headers: await _getHeaderConfig());
@@ -130,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   login() async {
-    await _checklogin();
+    await _checkLogin();
   }
 
   @override
@@ -138,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text("Welcome ${userdata?.fullname.toString() ?? ""}"),
+        title: Text("Welcome ${username ?? ""}"),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),

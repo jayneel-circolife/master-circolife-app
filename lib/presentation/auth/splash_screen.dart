@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:master_circolife_app/presentation/auth_screen.dart';
 import '../../main.dart';
 import '../home/screens/home_screen.dart';
 // import '../main.dart';
@@ -17,43 +18,28 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   String? isOnBoardingScreenLaunch;
   String? token;
-  final _auth = FirebaseAuth.instance;
+  String? userid;
 
   @override
   void initState() {
-    // checkLogin();
     login();
-    // _navigationToLoginScreen();
     super.initState();
   }
 
   login() async {
-    await checkLogin();
-  }
-
-  Future<void> checkLogin() async {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      User? user = _auth.currentUser;
-      if (user == null) {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
-      } else {
-        // log(_isConnected.toString(), name: "INTERNET 3 >>>>");
-        if (mounted) {
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
-        }
-      }
-    });
-    // await checkConnectivity();
+    await _navigationToLoginScreen();
   }
 
   _navigationToLoginScreen() async {
     await Future.delayed(const Duration(milliseconds: 2000), () {});
     token = await appStorage?.retrieveEncryptedData('token');
+    userid = await appStorage?.retrieveEncryptedData('userid');
     log(token.toString(), name: "Token>");
+    log(userid.toString(), name: "Token>");
     if (mounted) {
-      (token != null)
-          ? Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginScreen()))
-          : Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginScreen()));
+      (token != null && userid != null)
+          ? Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen()))
+          : Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AuthScreen()));
     }
   }
 

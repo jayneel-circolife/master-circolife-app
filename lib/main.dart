@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:master_circolife_app/firebase_options.dart';
 import 'package:master_circolife_app/presentation/auth/login_screen.dart';
 import 'package:master_circolife_app/presentation/auth/splash_screen.dart';
+import 'package:master_circolife_app/presentation/auth_screen.dart';
 import 'package:master_circolife_app/provider/mqtt_manager.dart';
 import 'package:master_circolife_app/utils/stroage.dart';
 import 'package:provider/provider.dart';
@@ -35,7 +36,7 @@ class MyApp extends StatelessWidget {
           useMaterial3: true,
           fontFamily: "Inter",
         ),
-        home: const SplashScreen(),
+        home: SplashScreen(),
         builder: (context, child) {
           return MediaQuery(
             data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
