@@ -24,10 +24,13 @@ class ConfigureDeviceScreen extends StatefulWidget {
 }
 
 class _ConfigureDeviceScreenState extends State<ConfigureDeviceScreen> {
-
-
   Future getDeviceState() async {
-    return http.get(Uri.https(AppSecrets.baseUrl, '/api/analItics/checdeviceStatus/getdeviceActive/${widget.deviceId}',), headers: await _getHeaderConfig());
+    return http.get(
+        Uri.https(
+          AppSecrets.baseUrl,
+          '/api/analitics/master/checkdeviceStatus/getdeviceActive/${widget.deviceId}',
+        ),
+        headers: await _getHeaderConfig());
   }
 
   @override
@@ -77,7 +80,8 @@ class _ConfigureDeviceScreenState extends State<ConfigureDeviceScreen> {
                                   onPressed: () async {
                                     if (phoneController.text.length == 10) {
                                       var headers = await _getHeaderConfig();
-                                      var response = await http.get(Uri.https(AppSecrets.baseUrl, "/api/user/${phoneController.text}"), headers: headers);
+                                      var response =
+                                          await http.get(Uri.https(AppSecrets.baseUrl, "/api/user/existUser/${phoneController.text}"), headers: headers);
                                       if (response.statusCode == 200 || response.statusCode == 201) {
                                         Map<String, dynamic> data = jsonDecode(response.body.toString());
                                         log(data["userid"], name: "UserDATA");
@@ -94,8 +98,8 @@ class _ConfigureDeviceScreenState extends State<ConfigureDeviceScreen> {
                                           "deviceType": "Split"
                                         };
                                         log(deviceData.toString(), name: "Payload");
-                                        var deviceResponse =
-                                            await http.post(Uri.https(AppSecrets.baseUrl, "/api/devices/"), body: jsonEncode(deviceData), headers: headers);
+                                        var deviceResponse = await http.post(Uri.https(AppSecrets.baseUrl, "/api/devices/master"),
+                                            body: jsonEncode(deviceData), headers: headers);
                                         if (deviceResponse.statusCode == 200 || deviceResponse.statusCode == 201) {
                                           Fluttertoast.showToast(msg: "Device Added Successfully");
                                           Navigator.pop(context);
@@ -219,7 +223,7 @@ class _ConfigureDeviceScreenState extends State<ConfigureDeviceScreen> {
                                       onPressed: () async {
                                         DateTime dt = DateTime.now();
                                         DateTime? expiryDate = await showDatePicker(
-                                            context: context, firstDate: DateTime(dt.year, dt.month, dt.day - 1), lastDate: DateTime(dt.year + 10));
+                                            context: context, firstDate: DateTime(dt.year, dt.month, dt.day - 1), lastDate: DateTime(dt.year + 40));
                                         if (expiryDate != null) {
                                           String expiry =
                                               "E~${(expiryDate!.day).toString().padLeft(2, "0")}~${(expiryDate.month).toString().padLeft(2, "0")}~${expiryDate.year}~${(startTime.hour).toString().padLeft(2, "0")}";

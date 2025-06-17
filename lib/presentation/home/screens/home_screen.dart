@@ -20,7 +20,6 @@ import '../../../models/user_details_model.dart';
 late MqttServerClient mqttClient;
 bool mqttListenerAttached = false;
 
-
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -41,9 +40,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _checkLogin() async {
     preferences = await SharedPreferences.getInstance();
     username = await appStorage?.retrieveEncryptedData("username");
-    setState(() {
-
-    });
+    setState(() {});
     if (user == null) {
     } else {
       await getuserdata(user!.phoneNumber.toString());
@@ -56,11 +53,12 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     dev.log(">>>$contact");
     var headers = await _getHeaderConfig();
-    var url = Uri.https(AppSecrets.baseUrl, '/api/user/${contact.replaceFirst("+91", "")}');
+    var url = Uri.https(AppSecrets.baseUrl, 'api/user/existUser/${contact.replaceFirst("+91", "")}');
     var response = await http.get(
       url,
       headers: headers,
     );
+
     if (response.statusCode == 200 || response.statusCode == 201) {
       setState(() {
         userdata = UserDetails.fromJson(json.decode(response.body));
@@ -85,9 +83,13 @@ class _HomeScreenState extends State<HomeScreen> {
     return headers;
   }
 
-
   Future getUserDataByPhoneNumber() async {
-    return http.get(Uri.https(AppSecrets.baseUrl, '/api/user/${phoneController.text}',), headers: await _getHeaderConfig());
+    return http.get(
+        Uri.https(
+          AppSecrets.baseUrl,
+          '/api/user/existUser/${phoneController.text}',
+        ),
+        headers: await _getHeaderConfig());
   }
 
   @override
@@ -152,10 +154,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (snapshot.connectionState == ConnectionState.waiting) {
                       return const CircularProgressIndicator();
                     } else if (snapshot.hasError) {
+                      dev.log(snapshot.data.toString(), name: "BODY>>>>");
                       return Text(snapshot.error.toString());
                     } else {
                       if (snapshot.data?.statusCode == 201 || snapshot.data?.statusCode == 200) {
-                        Map<String, dynamic> data = jsonDecode(snapshot.data!.body);
+                        dev.log(snapshot.data.toString(), name: "BODY>>>>");
+                        Map<String, dynamic> data = jsonDecode(snapshot.data?.body);
                         String userId = data['userid'] ?? "";
                         String fullName = data['Fullname'] ?? "";
                         String mobile = data['mobile'] ?? "";
@@ -213,7 +217,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                 title: const Text("View Devices"),
                                 trailing: const Icon(Icons.arrow_forward_rounded),
                                 onTap: () {
-                                  Navigator.push(context, MaterialPageRoute(builder: (context) => DevicesScreen(userId: userId, fullName: fullName, )));
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: (context) => DevicesScreen(
+                                                userId: userId,
+                                                fullName: fullName,
+                                              )));
                                 },
                               ),
                               ListTile(

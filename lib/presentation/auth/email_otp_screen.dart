@@ -133,13 +133,10 @@ class _EmailOtpScreenState extends State<EmailOtpScreen> {
     var response = await http.post(url, headers: headers, body: jsonEncode({"email": email, "otp": otp}));
     if (response.statusCode == 200 || response.statusCode == 201) {
       String jwtToken = jsonDecode(response.body.toString())["token"];
-      String userid = jsonDecode(response.body.toString())["userid"];
-      String username = jsonDecode(response.body.toString())["username"];
+      String username = jsonDecode(response.body.toString())["UserName"];
       dev.log(jwtToken.toString(), name: "JWT TOKEN>");
-      dev.log(userid.toString(), name: "JWT TOKEN>");
       dev.log(username.toString(), name: "JWT TOKEN>");
       await appStorage?.saveEncryptedData("token", jwtToken);
-      await appStorage?.saveEncryptedData("userid", userid);
       await appStorage?.saveEncryptedData("username", username);
       Fluttertoast.showToast(msg: "Verification Successful");
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));

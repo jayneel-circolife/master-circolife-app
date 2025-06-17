@@ -1,3 +1,3 @@
 class AppSecrets {
-  static String baseUrl = "production.circolife.vip";
+  static String baseUrl = "prodappapi.circolives.in";
 }

@@ -355,7 +355,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
   }
 
   Future<void> getDevices() async {
-    var url = Uri.parse('https://${AppSecrets.baseUrl}/api/devices/${widget.userId}');
+    var url = Uri.parse('https://${AppSecrets.baseUrl}/api/devices/master/${widget.userId}');
     var headers = await _getHeaderConfig();
     var response = await http.get(
       url,
@@ -372,7 +372,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
   }
 
   Future<void> getSharedDevices() async {
-    var url = Uri.parse('https://${AppSecrets.baseUrl}/api/devices/shared/${widget.userId}');
+    var url = Uri.parse('https://${AppSecrets.baseUrl}/api/devices/master/shared/${widget.userId}');
     var headers = await _getHeaderConfig();
     var response = await http.get(
       url,
@@ -425,7 +425,7 @@ class _DevicesScreenState extends State<DevicesScreen> {
   }
 
   addDevice(String deviceId, String deviceName, String userId, BuildContext context) async {
-    var url = Uri.https(AppSecrets.baseUrl, '/api/devices/');
+    var url = Uri.https(AppSecrets.baseUrl, '/api/devices/master');
     var headers = await _getHeaderConfig();
     Map<String, dynamic> deviceData = {
       "userid": userId,
