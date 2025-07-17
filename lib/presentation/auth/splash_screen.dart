@@ -33,11 +33,9 @@ class _SplashScreenState extends State<SplashScreen> {
   _navigationToLoginScreen() async {
     await Future.delayed(const Duration(milliseconds: 2000), () {});
     token = await appStorage?.retrieveEncryptedData('token');
-    userid = await appStorage?.retrieveEncryptedData('userid');
     log(token.toString(), name: "Token>");
-    log(userid.toString(), name: "Token>");
     if (mounted) {
-      (token != null && userid != null)
+      (token != null)
           ? Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeScreen()))
           : Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => AuthScreen()));
     }

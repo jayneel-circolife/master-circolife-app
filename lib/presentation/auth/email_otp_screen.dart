@@ -132,6 +132,7 @@ class _EmailOtpScreenState extends State<EmailOtpScreen> {
     var headers = await _getHeaderConfig();
     var response = await http.post(url, headers: headers, body: jsonEncode({"email": email, "otp": otp}));
     if (response.statusCode == 200 || response.statusCode == 201) {
+      dev.log(response.body.toString(), name: "response>>>");
       String jwtToken = jsonDecode(response.body.toString())["token"];
       String username = jsonDecode(response.body.toString())["UserName"];
       dev.log(jwtToken.toString(), name: "JWT TOKEN>");
